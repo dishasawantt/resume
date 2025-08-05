@@ -1,0 +1,55 @@
+[build]
+  # No build command needed for static HTML
+  publish = "."
+
+[build.environment]
+  # Environment variables (if needed)
+  NODE_VERSION = "18"
+
+[[headers]]
+  # Define which paths this specific [[headers]] block will cover
+  for = "/*"
+  
+  [headers.values]
+    # Security headers
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # Cache control
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Type = "text/css; charset=utf-8"
+
+[[headers]]
+  for = "*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    Content-Type = "application/javascript; charset=utf-8"
+
+# Redirect rules (if needed)
+[[redirects]]
+  from = "/resume"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/portfolio"
+  to = "/"
+  status = 301
+
+# SPA fallback (not needed for this static site, but good to have)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
