@@ -3,55 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Disha Sawant - Portfolio</title>
+    <title>Disha Sawant - AI Application Engineer | Portfolio</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Disha Sawant - Computer Engineering Graduate Student at SDSU & AI Application Engineer. Specializing in AI, machine learning, automation, and full-stack development.">
+    <meta name="keywords" content="Disha Sawant, AI Engineer, Computer Engineering, SDSU, Machine Learning, Full Stack Developer, Python, React, TensorFlow">
+    <meta name="author" content="Disha Sawant">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Disha Sawant - AI Application Engineer">
+    <meta property="og:description" content="Computer Engineering Graduate Student at SDSU specializing in AI, machine learning, and full-stack development.">
+    <meta property="og:image" content="IMG_9328.jpeg">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Disha Sawant - AI Application Engineer">
+    <meta name="twitter:description" content="Computer Engineering Graduate Student at SDSU specializing in AI and full-stack development.">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👩‍💻</text></svg>">
+    
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    
+    <!-- Devicon for tech logos -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
+    
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Disha Sawant",
+        "jobTitle": "AI Application Engineer",
+        "description": "Computer Engineering Graduate Student at San Diego State University",
+        "email": "dishasawantt@gmail.com",
+        "url": "https://dishasawantt.github.io",
+        "sameAs": [
+            "https://linkedin.com/in/disha-sawant-7877b21b6/",
+            "https://github.com/dishasawantt"
+        ],
+        "alumniOf": [
+            {
+                "@type": "CollegeOrUniversity",
+                "name": "San Diego State University"
+            },
+            {
+                "@type": "CollegeOrUniversity", 
+                "name": "University of Mumbai"
+            }
+        ]
+    }
+    </script>
 </head>
 <body>
+    <!-- Skip to main content for accessibility -->
+    <a href="#home" class="skip-link">Skip to main content</a>
+    
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-progress" id="scroll-progress"></div>
+    
+    <!-- Loading Screen -->
+    <div class="loader-wrapper" id="loader">
+        <div class="loader">
+            <div class="loader-rings">
+                <div class="ring"></div>
+                <div class="ring"></div>
+                <div class="ring"></div>
+            </div>
+            <div class="loader-text">
+                <span class="letter">N</span>
+                <span class="letter">A</span>
+                <span class="letter">M</span>
+                <span class="letter">A</span>
+                <span class="letter">S</span>
+                <span class="letter">T</span>
+                <span class="letter">E</span>
+            </div>
+        </div>
+    </div>
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
         <div class="nav-container">
             <div class="nav-logo">
                 <a href="#home">Disha Sawant</a>
             </div>
             <div class="nav-menu" id="nav-menu">
                 <a href="#home" class="nav-link">Home</a>
-
+                <a href="#education" class="nav-link">Education</a>
+                <a href="#skills" class="nav-link">Skills</a>
+                <a href="#certifications" class="nav-link">Certifications</a>
                 <a href="#experience" class="nav-link">Experience</a>
                 <a href="#projects" class="nav-link">Projects</a>
                 <a href="#contact" class="nav-link">Contact</a>
             </div>
-            <div class="nav-toggle" id="nav-toggle">
+            <div class="nav-actions">
+                <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="nav-toggle" id="nav-toggle" aria-label="Toggle menu">
                 <span class="bar"></span>
                 <span class="bar"></span>
                 <span class="bar"></span>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
     <section id="home" class="hero">
+        <canvas id="particles-canvas" class="particles-bg"></canvas>
+        <div class="morphing-blobs">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
+        </div>
         <div class="hero-container">
             <div class="hero-content">
                 <div class="hero-text">
-                    <h1 class="hero-title">Hi, I'm <span class="highlight">Disha Sawant</span></h1>
+                    <h1 class="hero-title">Hello and Namaste, I am <span class="highlight">Disha Sawant</span></h1>
                     <h2 class="hero-subtitle">Computer Engineering Graduate Student & AI Application Engineer</h2>
                     <p class="hero-description">
                         Passionate about AI, automation, and full-stack development. Currently pursuing M.S. in Computer Engineering at San Diego State University.
                     </p>
                     <div class="hero-buttons">
-                        <a href="#contact" class="btn btn-primary">Get In Touch</a>
-                        <a href="#projects" class="btn btn-secondary">View My Work</a>
+                        <a href="#contact" class="btn btn-primary magnetic-btn">Get In Touch</a>
+                        <a href="#projects" class="btn btn-secondary magnetic-btn">View My Work</a>
+                        <a href="Disha Sawant Resume 2025.pdf" class="btn btn-outline magnetic-btn" download aria-label="Download Resume">
+                            <i class="fas fa-download"></i> Resume
+                        </a>
                     </div>
                     <div class="hero-social">
-                        <a href="https://linkedin.com/in/disha-sawant-7877b21b6/" target="_blank" rel="noopener">
+                        <a href="https://linkedin.com/in/disha-sawant-7877b21b6/" target="_blank" rel="noopener" aria-label="LinkedIn Profile" data-tooltip="LinkedIn">
                             <i class="fab fa-linkedin"></i>
                         </a>
-                        <a href="mailto:dishasawantt@gmail.com">
+                        <a href="https://github.com/dishasawantt" target="_blank" rel="noopener" aria-label="GitHub Profile" data-tooltip="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="mailto:dishasawantt@gmail.com" aria-label="Send Email" data-tooltip="Email">
                             <i class="fas fa-envelope"></i>
                         </a>
-                        <a href="tel:+16199187729">
+                        <a href="tel:+16199187729" aria-label="Call Phone" data-tooltip="Call">
                             <i class="fas fa-phone"></i>
                         </a>
                     </div>
@@ -117,51 +218,253 @@
     <section id="skills" class="skills">
         <div class="container">
             <h2 class="section-title">Technical Skills</h2>
-            <div class="skills-grid">
-                <div class="skill-category">
-                    <h3><i class="fas fa-code"></i> Programming</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Python</span>
-                        <span class="skill-tag">Java</span>
-                        <span class="skill-tag">JavaScript</span>
-                        <span class="skill-tag">TypeScript</span>
-                        <span class="skill-tag">C++</span>
-                        <span class="skill-tag">SQL</span>
+            <div class="skills-container">
+                <div class="skills-column">
+                    <h3 class="skills-category-title"><i class="fas fa-code"></i> Programming Languages</h3>
+                    <div class="skill-bar-item" data-tooltip="Expert level proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-python-plain colored"></i> Python</span>
+                            <span class="skill-percent">90%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="90"></div>
+                        </div>
+                    </div>
+                    <div class="skill-bar-item" data-tooltip="Advanced proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-javascript-plain colored"></i> JavaScript / TypeScript</span>
+                            <span class="skill-percent">85%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="85"></div>
+                        </div>
+                    </div>
+                    <div class="skill-bar-item" data-tooltip="Advanced proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-java-plain colored"></i> Java</span>
+                            <span class="skill-percent">80%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="80"></div>
+                        </div>
+                    </div>
+                    <div class="skill-bar-item" data-tooltip="Advanced proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-mysql-plain colored"></i> SQL</span>
+                            <span class="skill-percent">85%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="85"></div>
+                        </div>
+                    </div>
+                    <div class="skill-bar-item" data-tooltip="Intermediate proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-cplusplus-plain colored"></i> C++</span>
+                            <span class="skill-percent">70%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="70"></div>
+                        </div>
                     </div>
                 </div>
-                <div class="skill-category">
-                    <h3><i class="fas fa-cogs"></i> Frameworks</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag">React</span>
-                        <span class="skill-tag">Angular</span>
-                        <span class="skill-tag">FastAPI</span>
-                        <span class="skill-tag">TensorFlow</span>
-                        <span class="skill-tag">Pandas</span>
-                        <span class="skill-tag">NumPy</span>
-                        <span class="skill-tag">SciPy</span>
-                        <span class="skill-tag">ROS</span>
-                        <span class="skill-tag">MAVSDK</span>
+                <div class="skills-column">
+                    <h3 class="skills-category-title"><i class="fas fa-brain"></i> AI/ML & Frameworks</h3>
+                    <div class="skill-bar-item" data-tooltip="Advanced proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-tensorflow-original colored"></i> TensorFlow / Keras</span>
+                            <span class="skill-percent">85%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="85"></div>
+                        </div>
+                    </div>
+                    <div class="skill-bar-item" data-tooltip="Expert level proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-scikitlearn-plain colored"></i> Scikit-learn</span>
+                            <span class="skill-percent">90%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="90"></div>
+                        </div>
+                    </div>
+                    <div class="skill-bar-item" data-tooltip="Expert level proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-pandas-original colored"></i> Pandas / NumPy</span>
+                            <span class="skill-percent">95%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="95"></div>
+                        </div>
+                    </div>
+                    <div class="skill-bar-item" data-tooltip="Advanced proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-react-original colored"></i> React / Angular</span>
+                            <span class="skill-percent">80%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="80"></div>
+                        </div>
+                    </div>
+                    <div class="skill-bar-item" data-tooltip="Advanced proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-fastapi-plain colored"></i> FastAPI</span>
+                            <span class="skill-percent">85%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="85"></div>
+                        </div>
                     </div>
                 </div>
-                <div class="skill-category">
-                    <h3><i class="fas fa-database"></i> Databases</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag">MongoDB</span>
-                        <span class="skill-tag">MySQL</span>
+                <div class="skills-column">
+                    <h3 class="skills-category-title"><i class="fas fa-tools"></i> Tools & Platforms</h3>
+                    <div class="skill-bar-item" data-tooltip="Advanced proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-docker-plain colored"></i> Docker</span>
+                            <span class="skill-percent">80%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="80"></div>
+                        </div>
+                    </div>
+                    <div class="skill-bar-item" data-tooltip="Intermediate proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-amazonwebservices-original colored"></i> AWS</span>
+                            <span class="skill-percent">75%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="75"></div>
+                        </div>
+                    </div>
+                    <div class="skill-bar-item" data-tooltip="Advanced proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="devicon-mongodb-plain colored"></i> MongoDB / MySQL</span>
+                            <span class="skill-percent">85%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="85"></div>
+                        </div>
+                    </div>
+                    <div class="skill-bar-item" data-tooltip="Intermediate proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="fas fa-robot"></i> ROS / Gazebo</span>
+                            <span class="skill-percent">75%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="75"></div>
+                        </div>
+                    </div>
+                    <div class="skill-bar-item" data-tooltip="Advanced proficiency">
+                        <div class="skill-info">
+                            <span class="skill-name"><i class="fas fa-chart-bar"></i> Tableau</span>
+                            <span class="skill-percent">80%</span>
+                        </div>
+                        <div class="skill-bar">
+                            <div class="skill-progress" data-progress="80"></div>
+                        </div>
                     </div>
                 </div>
-                <div class="skill-category">
-                    <h3><i class="fas fa-tools"></i> Tools & APIs</h3>
-                    <div class="skill-tags">
-                        <span class="skill-tag">Google Dataflow</span>
-                        <span class="skill-tag">Docker</span>
-                        <span class="skill-tag">AWS</span>
-                        <span class="skill-tag">Tableau</span>
-                        <span class="skill-tag">Postman</span>
-                        <span class="skill-tag">Gazebo</span>
-                        <span class="skill-tag">PX4 SITL</span>
-                        <span class="skill-tag">Zendesk</span>
-                        <span class="skill-tag">Freshdesk</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certifications Section -->
+    <section id="certifications" class="certifications">
+        <div class="container">
+            <h2 class="section-title">Certifications</h2>
+            <div class="certifications-grid">
+                <div class="certification-card">
+                    <div class="certification-image">
+                        <img src="Assets/cert_ucsd_bigdata.png" alt="UC San Diego" class="cert-img" loading="lazy">
+                    </div>
+                    <div class="certification-content">
+                        <h3>Big Data Specialization</h3>
+                        <p>6 Courses: Introduction to Big Data, Big Data Modeling & Management, Big Data Integration & Processing, ML with Big Data, Graph Analytics, Capstone Project</p>
+                        <div class="certification-tech">
+                            <span>UC San Diego</span>
+                            <span>Coursera</span>
+                            <span>Sep 2021</span>
+                        </div>
+                        <div class="certification-links">
+                            <a href="https://coursera.org/verify/specialization/KCXL4ZPWQMYT" target="_blank" rel="noopener" class="certification-link">
+                                <i class="fas fa-external-link-alt"></i> Verify Certificate
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="certification-card">
+                    <div class="certification-image">
+                        <img src="Assets/cert_deeplearning_ai.jpg" alt="DeepLearning.AI" class="cert-img" loading="lazy">
+                    </div>
+                    <div class="certification-content">
+                        <h3>Deep Learning Specialization</h3>
+                        <p>5 Courses: Neural Networks, Hyperparameter Tuning & Optimization, Structuring ML Projects, CNNs, Sequence Models</p>
+                        <div class="certification-tech">
+                            <span>DeepLearning.AI</span>
+                            <span>Coursera</span>
+                            <span>Jul 2021</span>
+                        </div>
+                        <div class="certification-links">
+                            <a href="https://coursera.org/verify/specialization/J7GLEK6C2BXY" target="_blank" rel="noopener" class="certification-link">
+                                <i class="fas fa-external-link-alt"></i> Verify Certificate
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="certification-card">
+                    <div class="certification-image">
+                        <img src="Assets/cert_ibm.jpg" alt="IBM" class="cert-img" loading="lazy">
+                    </div>
+                    <div class="certification-content">
+                        <h3>Introduction to Data Science</h3>
+                        <p>4 Courses: What is Data Science, Tools for Data Science, Data Science Methodology, Databases & SQL with Python</p>
+                        <div class="certification-tech">
+                            <span>IBM</span>
+                            <span>Coursera</span>
+                            <span>Jul 2021</span>
+                        </div>
+                        <div class="certification-links">
+                            <a href="https://coursera.org/verify/specialization/2CH5P6MMF2Q2" target="_blank" rel="noopener" class="certification-link">
+                                <i class="fas fa-external-link-alt"></i> Verify Certificate
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="certification-card">
+                    <div class="certification-image">
+                        <img src="Assets/cert_aws.webp" alt="AWS" class="cert-img" loading="lazy">
+                    </div>
+                    <div class="certification-content">
+                        <h3>AWS Machine Learning</h3>
+                        <p>Getting Started with AWS Machine Learning - Cloud-based ML services and deployment</p>
+                        <div class="certification-tech">
+                            <span>Amazon Web Services</span>
+                            <span>Coursera</span>
+                            <span>Jan 2022</span>
+                        </div>
+                        <div class="certification-links">
+                            <a href="https://coursera.org/verify/CMBEXJJTHVPE" target="_blank" rel="noopener" class="certification-link">
+                                <i class="fas fa-external-link-alt"></i> Verify Certificate
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="certification-card">
+                    <div class="certification-image">
+                        <img src="Assets/cert_johns_hopkins.jpg" alt="Johns Hopkins University" class="cert-img" loading="lazy">
+                    </div>
+                    <div class="certification-content">
+                        <h3>The Data Scientist's Toolbox</h3>
+                        <p>Data Science fundamentals, R programming, version control, and reproducible research</p>
+                        <div class="certification-tech">
+                            <span>Johns Hopkins</span>
+                            <span>Coursera</span>
+                            <span>Jan 2022</span>
+                        </div>
+                        <div class="certification-links">
+                            <a href="https://coursera.org/verify/NPMJJMKBJWTZ" target="_blank" rel="noopener" class="certification-link">
+                                <i class="fas fa-external-link-alt"></i> Verify Certificate
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -207,11 +510,161 @@
                         <span class="timeline-date">Dec 2022 - Aug 2024</span>
                         <span class="timeline-location">Mumbai, India</span>
                         <ul class="experience-achievements">
-                            <li>Improved decision-making by 20% through Python statistical analyses and Tableau visualizations</li>
-                            <li>Developed real-time dashboard using DX.js and Angular</li>
+                            <li>
+                                <strong>ETL Pipeline Development:</strong> Architected and developed scalable ETL processes using Python, Apache Airflow, and SQL to handle 500,000+ daily records. Ensured seamless data integration across 10+ enterprise systems with 99.5% data accuracy.
+                            </li>
+                            <li>
+                                <strong>Predictive Maintenance:</strong> Engineered machine learning models using Scikit-learn and XGBoost to anticipate hardware failures. Achieved 17% increase in system uptime and 40% reduction in unplanned downtime, saving $50K+ annually.
+                            </li>
+                            <li>
+                                <strong>Real-time Dashboard:</strong> Developed interactive analytics dashboard using Angular, D3.js, and Tableau. Enabled stakeholders to monitor KPIs in real-time, improving decision-making efficiency by 20%.
+                            </li>
                         </ul>
                     </div>
                 </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>Data Analyst Intern</h3>
+                        <h4>Saint Louis University</h4>
+                        <span class="timeline-date">Jan 2022 - Feb 2022</span>
+                        <span class="timeline-location">St. Louis, MO (Remote)</span>
+                        <ul class="experience-achievements">
+                            <li>
+                                <strong>Campaign Analytics Leadership:</strong> Led intern team in strategic analysis of Facebook ad performance for SuperHeroU campaign. Analyzed 50,000+ data points across Reach, Revenue, CTC, CPR, and CPC metrics using Python, Pandas, and Excel across 13 international markets.
+                            </li>
+                            <li>
+                                <strong>Performance Optimization:</strong> Identified 25% decrease in campaign effectiveness in specific regions through statistical analysis. Delivered data-driven recommendations achieving projected 15% improvement in campaign efficiency and 10% reduction in advertising costs.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>Data Science Intern</h3>
+                        <h4>PlotMyData</h4>
+                        <span class="timeline-date">Jun 2021 - Jul 2021</span>
+                        <span class="timeline-location">Remote</span>
+                        <ul class="experience-achievements">
+                            <li>
+                                <strong>Parkinson Disease Detection:</strong> Built early diagnosis model achieving 94% accuracy using Random Forest and XGBoost classifiers with Scikit-learn. Processed 5,000+ patient records using Pandas and NumPy for feature engineering on voice frequency and tremor data.
+                            </li>
+                            <li>
+                                <strong>Academic Performance Prediction:</strong> Developed regression model with 89% R² score using Linear Regression and Decision Trees. Analyzed 10,000+ student records with Matplotlib and Seaborn for exploratory data analysis and visualization.
+                            </li>
+                            <li>
+                                <strong>Fake News Detection:</strong> Implemented NLP classifier achieving 92% F1-score using TF-IDF vectorization and Naive Bayes algorithm. Processed 20,000+ news articles using NLTK for text preprocessing, tokenization, and stopword removal.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>Artificial Intelligence Intern</h3>
+                        <h4>Beat The Virus Startup</h4>
+                        <span class="timeline-date">Jun 2021 - Jul 2021</span>
+                        <span class="timeline-location">Remote</span>
+                        <ul class="experience-achievements">
+                            <li>
+                                <strong>Object Recognition:</strong> Built CNN-based image classifier achieving 91% accuracy on CIFAR-10 dataset using TensorFlow and Keras. Implemented data augmentation techniques increasing model robustness by 15%.
+                            </li>
+                            <li>
+                                <strong>Handwritten Digit Classification:</strong> Developed deep learning model achieving 98.5% accuracy on 60,000 MNIST images using CNN architecture with Conv2D, MaxPooling, and Dense layers in TensorFlow.
+                            </li>
+                            <li>
+                                <strong>News Classification:</strong> Implemented multi-class text categorization achieving 88% accuracy using LSTM networks and Word2Vec embeddings. Processed 15,000+ articles with spaCy and NLTK for NLP preprocessing.
+                            </li>
+                            <li>
+                                <strong>ML Applications:</strong> Built Gmail Spam Detection (96% precision using SVM), Diabetes Prediction (85% accuracy using Logistic Regression on 768 patient records), and IRIS Classification (97% accuracy using K-Nearest Neighbors) with Scikit-learn.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h3>Data Science Intern</h3>
+                        <h4>GreatAlbum LLC</h4>
+                        <span class="timeline-date">Apr 2021 - Jul 2021</span>
+                        <span class="timeline-location">Boston, MA (Remote)</span>
+                        <ul class="experience-achievements">
+                            <li>
+                                <strong>Photo Clustering Algorithm:</strong> Developed logic to recognize "clusters" of photos based on date/time metadata from Google Photos and iCloud Photos. Built clustering algorithm using Python and K-Means to auto-group 10,000+ photos into events.
+                            </li>
+                            <li>
+                                <strong>Mock Application:</strong> Created prototype application using Python and Google Sheets API to demonstrate photo clustering functionality. Collaborated with lead developer to implement the algorithm in the production Drupal-based application.
+                            </li>
+                            <li>
+                                <strong>Metadata Processing:</strong> Engineered data pipeline to import and process photo metadata (EXIF data, timestamps, geolocation) using Pandas, enabling automatic event creation and photo organization for the platform.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="testimonials">
+        <div class="container">
+            <h2 class="section-title">Recommendations</h2>
+            <div class="testimonials-slider">
+                <div class="testimonial-card active">
+                    <div class="testimonial-content">
+                        <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                        <p class="testimonial-text">"I would highly recommend Disha for any project or job role in which she seems qualified. She will be a delight to any team! During this project, Disha worked really well independently when assigned tasks and also as a team member, collaborating with others."</p>
+                        <div class="testimonial-author">
+                            <div class="author-info">
+                                <h4>Erik Britt-Webb</h4>
+                                <span>Founder & CEO, GreatAlbum LLC</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                        <p class="testimonial-text">"Given Disha's success with demanding problems in short time frames, I would work with her again and highly recommend her for future opportunities. She played a major role in building an Expensify integration completed on a tight deadline for a customer demo."</p>
+                        <div class="testimonial-author">
+                            <div class="author-info">
+                                <h4>Jay Lowe</h4>
+                                <span>Supervisor, Ema Unlimited</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                        <p class="testimonial-text">"I sincerely believe Disha will bring her unique energy, optimism, passion, and tireless creativity to your class and University as a whole. I appointed her as the head of the ML team, and her knowledge of deploying models using FlaskAPI, Django and TensorFlow.js enabled her team to deploy live on the internet."</p>
+                        <div class="testimonial-author">
+                            <div class="author-info">
+                                <h4>Dr. Mahendra Pawar</h4>
+                                <span>Associate Professor, VPPCOEVA College Mumbai</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+                        <p class="testimonial-text">"Disha is really intellectual, attentive and possesses a positive attitude towards academics. Her fantastic research and presentation skills saved the day and made her project stand out. She gracefully accepted recommendations and constructive criticism, which helped improve her work for the best."</p>
+                        <div class="testimonial-author">
+                            <div class="author-info">
+                                <h4>Prof. Atul Shintre</h4>
+                                <span>Associate Professor, VPPCOEVA College Mumbai</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-nav">
+                <button class="testimonial-btn prev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+                <div class="testimonial-dots">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+                <button class="testimonial-btn next" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </section>
@@ -220,10 +673,17 @@
     <section id="projects" class="projects">
         <div class="container">
             <h2 class="section-title">Featured Projects</h2>
+            <div class="project-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="ai-ml">AI/ML</button>
+                <button class="filter-btn" data-filter="fullstack">Full-Stack</button>
+                <button class="filter-btn" data-filter="robotics">Robotics</button>
+                <button class="filter-btn" data-filter="data-viz">Data Viz</button>
+            </div>
             <div class="projects-grid">
-                <div class="project-card">
+                <div class="project-card" data-category="robotics">
                     <div class="project-image">
-                        <img src="Assets/Quadro copter.png" alt="Quadrotor Flight Control Simulation" class="project-img">
+                        <img src="Assets/Quadro copter.png" alt="Quadrotor Flight Control Simulation" class="project-img" loading="lazy">
                     </div>
                     <div class="project-content">
                         <h3>Quadrotor Flight Control Simulation</h3>
@@ -244,9 +704,9 @@
                     </div>
                 </div>
 
-                <div class="project-card">
+                <div class="project-card" data-category="fullstack">
                     <div class="project-image">
-                        <img src="Assets/WordEchoBlog.png" alt="WordEcho Blog Platform" class="project-img">
+                        <img src="Assets/WordEchoBlog.png" alt="WordEcho Blog Platform" class="project-img" loading="lazy">
                     </div>
                     <div class="project-content">
                         <h3>WordEcho - Full-Stack Blog Platform</h3>
@@ -267,9 +727,9 @@
                     </div>
                 </div>
 
-                <div class="project-card">
+                <div class="project-card" data-category="ai-ml">
                     <div class="project-image">
-                        <img src="Assets/Math Garden.png" alt="MathUI Handwritten Digit Recognition" class="project-img">
+                        <img src="Assets/Math Garden.png" alt="MathUI Handwritten Digit Recognition" class="project-img" loading="lazy">
                     </div>
                     <div class="project-content">
                         <h3>MathUI - Handwritten Digit Recognition</h3>
@@ -290,9 +750,9 @@
                     </div>
                 </div>
 
-                <div class="project-card">
+                <div class="project-card" data-category="ai-ml">
                     <div class="project-image">
-                        <img src="Assets/MelodyVoiceUi.png" alt="VoiceUI Voice Recognition Interface" class="project-img">
+                        <img src="Assets/MelodyVoiceUi.png" alt="VoiceUI Voice Recognition Interface" class="project-img" loading="lazy">
                     </div>
                     <div class="project-content">
                         <h3>VoiceUI - Voice Recognition Interface</h3>
@@ -312,9 +772,9 @@
                     </div>
                 </div>
 
-                <div class="project-card">
+                <div class="project-card" data-category="data-viz">
                     <div class="project-image">
-                        <img src="Assets/climate.png" alt="ClimateUI World Viewer" class="project-img">
+                        <img src="Assets/climate.png" alt="ClimateUI World Viewer" class="project-img" loading="lazy">
                     </div>
                     <div class="project-content">
                         <h3>ClimateUI - World Climate Data Viewer</h3>
@@ -330,6 +790,116 @@
                         <div class="project-links">
                             <a href="https://dishasawantt.github.io/WorldViewer/" target="_blank" rel="noopener" class="project-link">
                                 <i class="fas fa-external-link-alt"></i> Live Demo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card" data-category="ai-ml">
+                    <div class="project-image">
+                        <img src="Assets/AI_Business_AutoML.jpg" alt="AI in Business & AutoML" class="project-img" loading="lazy">
+                    </div>
+                    <div class="project-content">
+                        <h3>AI in Business & AutoML</h3>
+                        <p>Exploring automated machine learning techniques and their applications in business decision-making, optimization, and predictive analytics.</p>
+                        <div class="project-tech">
+                            <span>Python</span>
+                            <span>AutoML</span>
+                            <span>Jupyter</span>
+                            <span>Machine Learning</span>
+                            <span>Business Analytics</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://drive.google.com/file/d/1F9bFRPLjcNcc-hgbFZDmlry0lcEe8xgF/view?usp=sharing" target="_blank" rel="noopener" class="project-link">
+                                <i class="fas fa-external-link-alt"></i> View Notebook
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card" data-category="ai-ml">
+                    <div class="project-image">
+                        <img src="Assets/AI_Marketing.png" alt="AI in Marketing" class="project-img" loading="lazy">
+                    </div>
+                    <div class="project-content">
+                        <h3>AI in Marketing</h3>
+                        <p>Leveraging artificial intelligence for marketing analytics, customer segmentation, campaign optimization, and predictive consumer behavior modeling.</p>
+                        <div class="project-tech">
+                            <span>Python</span>
+                            <span>Machine Learning</span>
+                            <span>Data Analysis</span>
+                            <span>Marketing Analytics</span>
+                            <span>Jupyter</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://drive.google.com/file/d/1YzTniGn-zg3tCCV06oWAIr03D2_gsW3e/view?usp=sharing" target="_blank" rel="noopener" class="project-link">
+                                <i class="fas fa-external-link-alt"></i> View Notebook
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card" data-category="ai-ml">
+                    <div class="project-image">
+                        <img src="Assets/Creative_AI.jpg" alt="Creative AI" class="project-img" loading="lazy">
+                    </div>
+                    <div class="project-content">
+                        <h3>Creative AI</h3>
+                        <p>Exploring generative AI techniques for creative applications including content generation, image synthesis, and artistic style transfer.</p>
+                        <div class="project-tech">
+                            <span>Python</span>
+                            <span>Generative AI</span>
+                            <span>Deep Learning</span>
+                            <span>Neural Networks</span>
+                            <span>Jupyter</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://drive.google.com/file/d/15RlE9lNx5DEVQhAFls9rsflSfNNR7D1g/view?usp=sharing" target="_blank" rel="noopener" class="project-link">
+                                <i class="fas fa-external-link-alt"></i> View Notebook
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card" data-category="ai-ml">
+                    <div class="project-image">
+                        <img src="Assets/Emotion_AI.jpg" alt="Emotion AI" class="project-img" loading="lazy">
+                    </div>
+                    <div class="project-content">
+                        <h3>Emotion AI</h3>
+                        <p>Building emotion recognition systems using machine learning to detect and analyze human emotions from various data sources.</p>
+                        <div class="project-tech">
+                            <span>Python</span>
+                            <span>Computer Vision</span>
+                            <span>NLP</span>
+                            <span>Deep Learning</span>
+                            <span>Sentiment Analysis</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://drive.google.com/file/d/1dSEDbATWzaskiwSxvIcPKUi7G6vp-XQb/view?usp=sharing" target="_blank" rel="noopener" class="project-link">
+                                <i class="fas fa-external-link-alt"></i> View Notebook
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="project-card" data-category="ai-ml">
+                    <div class="project-image">
+                        <img src="Assets/Healthcare_AI.jpg" alt="Healthcare AI" class="project-img" loading="lazy">
+                    </div>
+                    <div class="project-content">
+                        <h3>Healthcare AI</h3>
+                        <p>Applying AI and machine learning to healthcare challenges including disease prediction, medical imaging analysis, and patient outcome optimization.</p>
+                        <div class="project-tech">
+                            <span>Python</span>
+                            <span>Machine Learning</span>
+                            <span>Medical Data</span>
+                            <span>Predictive Analytics</span>
+                            <span>Jupyter</span>
+                        </div>
+                        <div class="project-links">
+                            <a href="https://drive.google.com/file/d/19SZlQTlrmlkDJcRG5fVzSkkquAcJo6Lo/view?usp=sharing" target="_blank" rel="noopener" class="project-link">
+                                <i class="fas fa-external-link-alt"></i> View Notebook
                             </a>
                         </div>
                     </div>
@@ -363,6 +933,10 @@
                             <i class="fab fa-linkedin"></i>
                             <a href="https://linkedin.com/in/disha-sawant-7877b21b6/" target="_blank" rel="noopener">LinkedIn Profile</a>
                         </div>
+                        <div class="contact-item">
+                            <i class="fab fa-github"></i>
+                            <a href="https://github.com/dishasawantt" target="_blank" rel="noopener">GitHub Profile</a>
+                        </div>
                     </div>
                 </div>
                 <div class="contact-form">
@@ -386,22 +960,60 @@
         </div>
     </section>
 
+    <!-- Easter Egg -->
+    <div class="easter-egg" id="easter-egg">
+        <div class="easter-egg-content">
+            <span class="easter-emoji">🎉</span>
+            <h3>You found it!</h3>
+            <p>Thanks for exploring! Here's a virtual high-five! ✋</p>
+            <button class="close-easter" id="close-easter">Close</button>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="footer-content">
-                <p>&copy; 2025 Disha Sawant. All rights reserved.</p>
-                <div class="footer-social">
-                    <a href="https://linkedin.com/in/disha-sawant-7877b21b6/" target="_blank" rel="noopener">
-                        <i class="fab fa-linkedin"></i>
-                    </a>
-                    <a href="mailto:dishasawantt@gmail.com">
-                        <i class="fas fa-envelope"></i>
-                    </a>
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <h3>Disha Sawant</h3>
+                    <p>AI Application Engineer & Computer Engineering Graduate Student</p>
                 </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <nav aria-label="Footer navigation">
+                        <a href="#home">Home</a>
+                        <a href="#education">Education</a>
+                        <a href="#skills">Skills</a>
+                        <a href="#experience">Experience</a>
+                        <a href="#projects">Projects</a>
+                        <a href="#contact">Contact</a>
+                    </nav>
+                </div>
+                <div class="footer-connect">
+                    <h4>Connect</h4>
+                    <div class="footer-social">
+                        <a href="https://linkedin.com/in/disha-sawant-7877b21b6/" target="_blank" rel="noopener" aria-label="LinkedIn">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="https://github.com/dishasawantt" target="_blank" rel="noopener" aria-label="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="mailto:dishasawantt@gmail.com" aria-label="Email">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 Disha Sawant. All rights reserved.</p>
             </div>
         </div>
     </footer>
+
+    <!-- Back to Top Button -->
+    <button class="back-to-top" id="back-to-top" aria-label="Back to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 
     <script src="script.js"></script>
 </body>
