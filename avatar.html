@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Disha | AI Avatar</title>
+    <meta name="description" content="Have a conversation with Disha's AI avatar. Ask about her skills, experience, and projects.">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👩‍💻</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="avatar.css">
+</head>
+<body>
+    <div class="avatar-container">
+        <div class="ambient-bg">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+
+        <a href="index.html" class="close-btn" aria-label="Back to portfolio"><i class="fas fa-arrow-left"></i><span>Back to Portfolio</span></a>
+
+        <div class="avatar-content">
+            <div class="video-section">
+                <div class="video-frame">
+                    <video id="video-greeting" class="active" src="Assets/namaste.mp4" preload="auto" playsinline muted autoplay></video>
+                    <video id="video-idle" src="Assets/working.mp4" preload="auto" loop playsinline muted></video>
+                    <video id="video-goodbye" src="Assets/bye.mp4" preload="auto" playsinline muted></video>
+                    <div class="video-overlay"></div>
+                </div>
+                <canvas id="waveform" class="waveform-canvas" width="200" height="40"></canvas>
+                <div class="avatar-name" id="avatar-name"><h1><span class="status-dot"></span>Disha Sawant</h1><p>AI Application Engineer</p></div>
+            </div>
+
+            <div class="chat-section">
+                <div class="chat-history" id="chat-history"></div>
+                <div class="response-area" id="response-area"><div class="response-text" id="response-text"><p class="greeting-text">Hello, I am Disha. Feel free to ask me anything about my background, projects, or experience.</p></div></div>
+                <div class="suggestions" id="suggestions">
+                    <button class="suggestion-btn" data-query="Tell me about yourself">About Me</button>
+                    <button class="suggestion-btn" data-query="What is your work experience?">Experience</button>
+                    <button class="suggestion-btn" data-query="What projects have you worked on?">Projects</button>
+                    <button class="suggestion-btn" data-query="What are your technical skills?">Skills</button>
+                </div>
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <button id="mic-btn" class="mic-btn" aria-label="Voice input"><i class="fas fa-microphone"></i></button>
+                        <input type="text" id="user-input" placeholder="Ask me anything..." autocomplete="off">
+                        <button id="voice-toggle" class="voice-btn" aria-label="Toggle voice"><i class="fas fa-volume-up"></i></button>
+                        <button id="send-btn" class="send-btn" aria-label="Send message"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"><i class="fas fa-sun"></i><i class="fas fa-moon"></i></button>
+
+        <div class="voice-selector" id="voice-selector">
+            <button class="voice-selector-toggle" id="voice-selector-toggle" aria-label="Change voice"><i class="fas fa-sliders-h"></i></button>
+            <div class="voice-dropdown" id="voice-dropdown">
+                <div class="voice-dropdown-header"><span>Select Voice</span><button class="voice-dropdown-close" id="voice-dropdown-close"><i class="fas fa-times"></i></button></div>
+                <select id="voice-select"><option value="">Loading voices...</option></select>
+                <div class="voice-preview"><button id="voice-preview-btn" class="voice-preview-btn"><i class="fas fa-play"></i> Preview</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="avatar.js"></script>
+</body>
+</html>
