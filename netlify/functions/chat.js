@@ -1,4 +1,29 @@
 const Groq = require("groq-sdk");
+const connections = require("./connections.json");
+
+function searchConnections(query) {
+    const terms = query.toLowerCase().split(/\s+/);
+    return connections.filter(c => {
+        const name = c.name.toLowerCase();
+        return terms.some(t => name.includes(t) || name.split(' ').some(n => n.startsWith(t)));
+    }).slice(0, 3);
+}
+
+function extractNameQuery(message) {
+    const patterns = [
+        /do you know (\w+(?:\s+\w+)?)/i,
+        /who is (\w+(?:\s+\w+)?)/i,
+        /know (\w+(?:\s+\w+)?)/i,
+        /connected (?:to|with) (\w+(?:\s+\w+)?)/i,
+        /connection.*?named?\s+(\w+(?:\s+\w+)?)/i,
+        /is (\w+(?:\s+\w+)?) (?:in )?your (?:network|connections?)/i
+    ];
+    for (const p of patterns) {
+        const m = message.match(p);
+        if (m) return m[1].trim();
+    }
+    return null;
+}
 
 const SYSTEM_PROMPT = `You ARE Disha. You speak as yourself, not about yourself. This is your portfolio website chatbot.
 
@@ -102,8 +127,19 @@ exports.handler = async (event) => {
         const { message, history = [] } = JSON.parse(event.body);
         if (!message || typeof message !== 'string') return { statusCode: 400, headers, body: JSON.stringify({ error: "Message is required" }) };
 
+        let connectionContext = "";
+        const nameQuery = extractNameQuery(message);
+        if (nameQuery) {
+            const matches = searchConnections(nameQuery);
+            if (matches.length > 0) {
+                connectionContext = `\n\n[LINKEDIN DATA] Found in my network:\n${matches.map(c => `- ${c.name}: ${c.title} at ${c.company}`).join('\n')}\nMention this naturally.`;
+            } else {
+                connectionContext = `\n\n[LINKEDIN DATA] No connection named "${nameQuery}" found. Say you don't recall that person in your network.`;
+            }
+        }
+
         const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-        const messages = [{ role: "system", content: SYSTEM_PROMPT }, ...history.slice(-8), { role: "user", content: message }];
+        const messages = [{ role: "system", content: SYSTEM_PROMPT + connectionContext }, ...history.slice(-8), { role: "user", content: message }];
 
         const chatCompletion = await groq.chat.completions.create({
             messages,
