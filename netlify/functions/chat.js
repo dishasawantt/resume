@@ -1,12 +1,84 @@
 const Groq = require("groq-sdk");
 const connections = require("./connections.json");
 
+const MY_BACKGROUND = {
+    schools: [
+        { name: "SDSU", fullName: "San Diego State University", start: 2024, end: 2026 },
+        { name: "University of Mumbai", fullName: "University of Mumbai", start: 2018, end: 2022 }
+    ],
+    companies: [
+        { name: "Ema Unlimited", start: 2025, end: 2025 },
+        { name: "Image Computers", start: 2022, end: 2024 },
+        { name: "Saint Louis University", start: 2022, end: 2022 },
+        { name: "GreatAlbum", start: 2021, end: 2021 },
+        { name: "PlotMyData", start: 2021, end: 2021 },
+        { name: "Beat The Virus", start: 2021, end: 2021 }
+    ]
+};
+
 function searchConnections(query) {
     const terms = query.toLowerCase().split(/\s+/);
     return connections.filter(c => {
         const name = c.name.toLowerCase();
         return terms.some(t => name.includes(t) || name.split(' ').some(n => n.startsWith(t)));
     }).slice(0, 3);
+}
+
+function detectRelationship(connection) {
+    const relations = [];
+    const normalize = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    
+    if (connection.education) {
+        for (const edu of connection.education) {
+            for (const mySchool of MY_BACKGROUND.schools) {
+                if (normalize(edu.school).includes(normalize(mySchool.name)) || 
+                    normalize(edu.school).includes(normalize(mySchool.fullName))) {
+                    const gradYear = edu.endYear || edu.startYear;
+                    if (gradYear) {
+                        if (gradYear < MY_BACKGROUND.schools[0].start) {
+                            relations.push(`Senior alumni from ${mySchool.name} (graduated ${gradYear})`);
+                        } else if (gradYear > MY_BACKGROUND.schools[0].end) {
+                            relations.push(`Junior at ${mySchool.name} (class of ${gradYear})`);
+                        } else {
+                            relations.push(`Classmate at ${mySchool.name}`);
+                        }
+                    } else {
+                        relations.push(`Alumni from ${mySchool.name}`);
+                    }
+                }
+            }
+        }
+    }
+    
+    if (connection.experience) {
+        for (const exp of connection.experience) {
+            for (const myCompany of MY_BACKGROUND.companies) {
+                if (normalize(exp.company).includes(normalize(myCompany.name))) {
+                    const expStart = exp.startYear || 0;
+                    const expEnd = exp.endYear || 2026;
+                    const overlap = !(expEnd < myCompany.start || expStart > myCompany.end);
+                    if (overlap) {
+                        relations.push(`Former colleague at ${myCompany.name}`);
+                    } else if (expEnd < myCompany.start) {
+                        relations.push(`Worked at ${myCompany.name} before me`);
+                    } else {
+                        relations.push(`Joined ${myCompany.name} after I left`);
+                    }
+                }
+            }
+        }
+    }
+    
+    return relations;
+}
+
+function formatConnection(c) {
+    let info = `${c.name}: ${c.title} at ${c.company}`;
+    const relations = detectRelationship(c);
+    if (relations.length > 0) {
+        info += ` [${relations.join('; ')}]`;
+    }
+    return info;
 }
 
 function extractNameQuery(message) {
@@ -132,7 +204,7 @@ exports.handler = async (event) => {
         if (nameQuery) {
             const matches = searchConnections(nameQuery);
             if (matches.length > 0) {
-                connectionContext = `\n\n[LINKEDIN DATA] Found in my network:\n${matches.map(c => `- ${c.name}: ${c.title} at ${c.company}`).join('\n')}\nMention this naturally.`;
+                connectionContext = `\n\n[LINKEDIN DATA] Found in my network:\n${matches.map(c => `- ${formatConnection(c)}`).join('\n')}\nMention relationship context naturally (alumni, colleague, etc).`;
             } else {
                 connectionContext = `\n\n[LINKEDIN DATA] No connection named "${nameQuery}" found. Say you don't recall that person in your network.`;
             }

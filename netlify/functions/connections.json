@@ -2,7 +2,12 @@
   {
     "name": "Sample Connection",
     "title": "Software Engineer",
-    "company": "Example Company"
+    "company": "Google",
+    "education": [
+      { "school": "San Diego State University", "startYear": 2020, "endYear": 2024 }
+    ],
+    "experience": [
+      { "company": "Image Computers", "startYear": 2021, "endYear": 2022 }
+    ]
   }
 ]
-
