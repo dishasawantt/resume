@@ -1,4 +1,5 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
+html { height: -webkit-fill-available; }
 
 :root {
     --primary: #d4846a;
@@ -35,17 +36,21 @@ body {
     background: var(--bg-dark);
     color: var(--text-primary);
     min-height: 100vh;
+    min-height: -webkit-fill-available;
+    min-height: 100dvh;
     overflow: hidden;
 }
 
 .avatar-container {
     width: 100vw;
-    height: 100vh;
+    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 .ambient-bg { position: absolute; inset: 0; overflow: hidden; z-index: 0; }
@@ -272,7 +277,7 @@ body {
     border: none;
     outline: none;
     font-family: inherit;
-    font-size: 1rem;
+    font-size: 16px;
     color: var(--text-primary);
     padding-left: 0.5rem;
 }
@@ -481,29 +486,47 @@ body {
 .response-area::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
 @media (max-width: 768px) {
-    .close-btn { top: 1rem; left: 1rem; padding: 0.6rem 1rem; }
-    .close-btn span { display: none; }
-    .theme-toggle { top: 1rem; right: 4.5rem; width: 38px; height: 38px; }
-    .avatar-content { padding: 1rem; gap: 1.5rem; }
+    body { overflow-y: auto; overflow-x: hidden; }
+    .avatar-container { height: auto; min-height: 100dvh; overflow: visible; }
+    .avatar-content { padding: 5rem 1rem 2rem; min-height: 100dvh; justify-content: flex-start; gap: 1.5rem; }
     .avatar-content.horizontal { flex-direction: column; align-items: center; }
     .avatar-content.horizontal .video-section { width: 100%; position: static; }
-    .avatar-content.horizontal .video-frame { width: 160px; height: 160px; }
+    .avatar-content.horizontal .video-frame { width: 140px; height: 140px; }
     .avatar-content.horizontal .chat-section { max-height: none; }
-    .avatar-content.horizontal .chat-history { max-height: 200px; }
-    .video-frame { width: 200px; height: 200px; }
-    .avatar-name h1 { font-size: 1.4rem; }
-    .response-area { padding: 1rem 1.25rem; min-height: 100px; }
-    .response-text { font-size: 0.95rem; }
-    .suggestions { gap: 0.5rem; }
-    .suggestion-btn { padding: 0.5rem 1rem; font-size: 0.8rem; }
-    .voice-selector { top: 1rem; right: 1rem; }
-    .voice-selector-toggle { padding: 0.6rem; }
+    .avatar-content.horizontal .chat-history { max-height: 180px; }
+    .close-btn { top: 1rem; left: 1rem; padding: 0.5rem 0.75rem; font-size: 0.8rem; }
+    .close-btn span { display: none; }
+    .theme-toggle { top: 1rem; right: 1rem; width: 36px; height: 36px; }
+    .voice-selector { position: fixed; bottom: 1rem; right: 1rem; top: auto; z-index: 100; }
+    .voice-selector-toggle { padding: 0.5rem; width: 36px; height: 36px; }
     .voice-selector-toggle i:first-child { display: none; }
-    .voice-dropdown { width: 250px; }
+    .voice-dropdown { bottom: calc(100% + 0.5rem); top: auto; right: 0; max-width: calc(100vw - 2rem); width: 250px; }
+    .video-frame { width: 150px; height: 150px; border-width: 3px; }
+    .avatar-name h1 { font-size: 1.2rem; }
+    .avatar-name p { font-size: 0.85rem; }
+    .response-area { padding: 1rem; max-height: 150px; }
+    .response-text { font-size: 0.9rem; line-height: 1.6; }
+    .suggestions { gap: 0.4rem; }
+    .suggestion-btn { padding: 0.4rem 0.8rem; font-size: 0.75rem; }
+    .input-wrapper { padding: 0.35rem; gap: 0.5rem; }
+    .voice-btn, .send-btn, .mic-btn { width: 38px; height: 38px; font-size: 0.9rem; }
+    .quick-actions { gap: 0.5rem; }
+    .quick-action-btn { padding: 0.5rem 1rem; font-size: 0.8rem; }
 }
 
 @media (max-width: 480px) {
-    .video-frame { width: 160px; height: 160px; border-width: 3px; }
-    .input-wrapper { padding: 0.4rem; }
-    .voice-btn, .send-btn, .mic-btn { width: 40px; height: 40px; }
+    .video-frame { width: 130px; height: 130px; }
+    .avatar-name h1 { font-size: 1.1rem; }
+    .input-wrapper { padding: 0.3rem; }
+    .voice-btn, .send-btn, .mic-btn { width: 36px; height: 36px; }
+}
+
+@media (max-width: 380px) {
+    .video-frame { width: 110px; height: 110px; }
+    .avatar-name h1 { font-size: 1rem; }
+    .suggestion-btn { padding: 0.35rem 0.6rem; font-size: 0.7rem; }
+}
+
+@supports (-webkit-touch-callout: none) {
+    .input-area { padding-bottom: env(safe-area-inset-bottom); }
 }
