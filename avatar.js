@@ -47,11 +47,18 @@ const easterEggs = {
     triggers: ['konami', 'secret', 'easter egg', 'hidden', 'surprise me'],
     responses: [
         "You found a secret! Fun fact: I once debugged code for 6 hours only to find a missing semicolon.",
-        "Easter egg unlocked! Here is something not on my resume: I can solve a Rubik's cube.",
+        "Easter egg unlocked! Did you know I've completed 72 LinkedIn Learning courses? I love continuous learning!",
         "Secret discovered! Did you know this entire avatar experience was built with vanilla JavaScript?",
         "Hidden message found! When I'm not coding, you'll find me painting watercolors or singing bhajans."
     ]
 };
+
+const suggestionSets = [
+    [{ text: "About Me", query: "Tell me about yourself" }, { text: "Ema AI Work", query: "Tell me about your AI work at Ema" }, { text: "22 Certifications", query: "What certifications do you have?" }, { text: "72 Courses", query: "Tell me about your continuous learning" }],
+    [{ text: "Experience", query: "What is your work experience?" }, { text: "Healthcare AI", query: "Tell me about your Brain Tumor AI project" }, { text: "Deep Learning", query: "Tell me about your Deep Learning specialization" }, { text: "Key Metrics", query: "What metrics have you achieved?" }],
+    [{ text: "Skills", query: "What are your technical skills?" }, { text: "Projects", query: "What projects have you worked on?" }, { text: "Hobbies", query: "What are your hobbies?" }, { text: "Contact", query: "How can I contact you?" }],
+    [{ text: "Education", query: "What is your educational background?" }, { text: "Big Data", query: "Tell me about your Big Data certifications" }, { text: "Best Project", query: "What's your most impactful project?" }, { text: "Why AI?", query: "Why are you passionate about AI?" }]
+];
 
 document.addEventListener('DOMContentLoaded', () => {
     loadPreferredVoice();
@@ -99,12 +106,7 @@ function getGreetingMessage() {
 }
 
 function setupRotatingSuggestions() {
-    const starters = [
-        [{ text: "About Me", query: "Tell me about yourself" }, { text: "Experience", query: "What is your work experience?" }, { text: "Projects", query: "What projects have you worked on?" }, { text: "Skills", query: "What are your technical skills?" }],
-        [{ text: "Education", query: "What is your educational background?" }, { text: "AI Work", query: "Tell me about your AI and machine learning experience" }, { text: "Certifications", query: "What certifications do you have?" }, { text: "Contact", query: "How can I contact you?" }],
-        [{ text: "Recent Role", query: "Tell me about your most recent job" }, { text: "Tech Stack", query: "What technologies do you work with?" }, { text: "Robotics", query: "Tell me about your robotics projects" }, { text: "Interests", query: "What are you passionate about?" }]
-    ];
-    const randomSet = starters[Math.floor(Math.random() * starters.length)];
+    const randomSet = suggestionSets[Math.floor(Math.random() * suggestionSets.length)];
     suggestions.querySelectorAll('.suggestion-btn').forEach((btn, i) => {
         if (randomSet[i]) { btn.textContent = randomSet[i].text; btn.setAttribute('data-query', randomSet[i].query); }
     });
@@ -273,6 +275,7 @@ function setupEventListeners() {
     voiceToggle.addEventListener('click', toggleVoice);
     micBtn?.addEventListener('click', () => isListening ? stopListening() : startListening());
     suggestionBtns.forEach(btn => btn.addEventListener('click', () => { userInput.value = btn.getAttribute('data-query'); handleSend(); }));
+    document.querySelectorAll('.quick-action-btn[data-query]').forEach(btn => btn.addEventListener('click', () => { userInput.value = btn.getAttribute('data-query'); handleSend(); }));
 }
 
 function toggleVoice() {
@@ -308,6 +311,7 @@ async function handleSend() {
 
     addToChatHistory(message, true);
     suggestions.style.display = 'none';
+    document.getElementById('quick-actions')?.style.setProperty('display', 'none');
 
     const easterEggResponse = checkEasterEgg(message);
     if (easterEggResponse) {

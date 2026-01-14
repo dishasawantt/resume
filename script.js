@@ -16,12 +16,12 @@ if (canvas) {
     const ctx = canvas.getContext('2d');
     let particles = [];
     let mouseParticle = { x: 0, y: 0 };
-
+    
     const resizeCanvas = () => {
         canvas.width = canvas.parentElement.offsetWidth;
         canvas.height = canvas.parentElement.offsetHeight;
     };
-
+    
     class Particle {
         constructor() { this.reset(); }
         reset() {
@@ -51,7 +51,7 @@ if (canvas) {
             ctx.fill();
         }
     }
-
+    
     const initParticles = () => {
         particles = [];
         for (let i = 0; i < 80; i++) particles.push(new Particle());
@@ -74,20 +74,20 @@ if (canvas) {
             }
         }
     };
-
+    
     const animateParticles = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         particles.forEach(p => { p.update(); p.draw(); });
         connectParticles();
         requestAnimationFrame(animateParticles);
     };
-
+    
     canvas.addEventListener('mousemove', (e) => {
         const rect = canvas.getBoundingClientRect();
         mouseParticle.x = e.clientX - rect.left;
         mouseParticle.y = e.clientY - rect.top;
     });
-
+    
     resizeCanvas();
     initParticles();
     animateParticles();
@@ -147,28 +147,28 @@ const showTestimonial = (index) => {
 };
 
 if (testimonialCards.length > 1) {
-    setInterval(() => {
-        if (!isPaused) {
+        setInterval(() => {
+            if (!isPaused) {
+                currentTestimonial = (currentTestimonial + 1) % testimonialCards.length;
+                showTestimonial(currentTestimonial);
+            }
+        }, 4000);
+    
+    if (prevBtn) prevBtn.addEventListener('click', () => {
+            currentTestimonial = (currentTestimonial - 1 + testimonialCards.length) % testimonialCards.length;
+            showTestimonial(currentTestimonial);
+        });
+    
+    if (nextBtn) nextBtn.addEventListener('click', () => {
             currentTestimonial = (currentTestimonial + 1) % testimonialCards.length;
             showTestimonial(currentTestimonial);
-        }
-    }, 4000);
-
-    if (prevBtn) prevBtn.addEventListener('click', () => {
-        currentTestimonial = (currentTestimonial - 1 + testimonialCards.length) % testimonialCards.length;
-        showTestimonial(currentTestimonial);
-    });
-
-    if (nextBtn) nextBtn.addEventListener('click', () => {
-        currentTestimonial = (currentTestimonial + 1) % testimonialCards.length;
-        showTestimonial(currentTestimonial);
-    });
-
+        });
+    
     dots.forEach((dot, index) => dot.addEventListener('click', () => {
-        currentTestimonial = index;
-        showTestimonial(currentTestimonial);
+            currentTestimonial = index;
+            showTestimonial(currentTestimonial);
     }));
-
+    
     const testimonialSection = document.querySelector('.testimonials');
     if (testimonialSection) {
         testimonialSection.addEventListener('mouseenter', () => isPaused = true);
@@ -178,14 +178,14 @@ if (testimonialCards.length > 1) {
 
 const skillsSection = document.querySelector('.skills');
 if (skillsSection) {
-    const skillsObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                animateSkillBars();
-                skillsObserver.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.3 });
+const skillsObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            animateSkillBars();
+            skillsObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.3 });
     skillsObserver.observe(skillsSection);
 }
 
@@ -311,12 +311,12 @@ document.addEventListener('keydown', (e) => {
             konamiIndex = 0;
         }
     } else konamiIndex = 0;
-
+    
     if (e.key === 'Escape') {
         if (navMenu.classList.contains('active')) {
-            navMenu.classList.remove('active');
+        navMenu.classList.remove('active');
             navToggle.querySelectorAll('.bar').forEach(bar => { bar.style.transform = 'none'; bar.style.opacity = '1'; });
-        }
+    }
     }
 });
 
