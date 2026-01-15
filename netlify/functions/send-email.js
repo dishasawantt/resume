@@ -1,64 +1,39 @@
 const { Resend } = require('resend');
-
-const headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Content-Type": "application/json"
-};
-
-const rateLimitMap = new Map();
-
-function checkRateLimit(identifier, maxRequests = 3, windowMs = 3600000) {
-    const now = Date.now();
-    const userRequests = rateLimitMap.get(identifier) || [];
-    const recentRequests = userRequests.filter(time => now - time < windowMs);
-    
-    if (recentRequests.length >= maxRequests) {
-        return { allowed: false, retryAfter: Math.ceil((windowMs - (now - recentRequests[0])) / 60000) };
-    }
-    
-    recentRequests.push(now);
-    rateLimitMap.set(identifier, recentRequests);
-    return { allowed: true };
-}
+const { 
+    headers, 
+    checkRateLimit, 
+    isValidEmail, 
+    log, 
+    logError, 
+    errorResponse, 
+    successResponse, 
+    checkMethod 
+} = require('./utils');
 
 exports.handler = async (event) => {
-    if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
-    if (event.httpMethod !== "POST") return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
+    const methodCheck = checkMethod(event.httpMethod);
+    if (methodCheck) return methodCheck;
 
     try {
         const { visitorName, visitorEmail, message, context } = JSON.parse(event.body);
 
+        // Validate required fields
         if (!visitorName || !visitorEmail || !message) {
-            return { 
-                statusCode: 400, 
-                headers, 
-                body: JSON.stringify({ error: "Missing required fields: visitorName, visitorEmail, message" }) 
-            };
+            return errorResponse(400, "Missing required fields: visitorName, visitorEmail, message");
         }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(visitorEmail)) {
-            return { 
-                statusCode: 400, 
-                headers, 
-                body: JSON.stringify({ error: "Invalid email address" }) 
-            };
+        if (!isValidEmail(visitorEmail)) {
+            return errorResponse(400, "Invalid email address");
         }
 
+        // Rate limiting
         const clientIP = event.headers['client-ip'] || event.headers['x-forwarded-for'] || 'unknown';
         const rateLimit = checkRateLimit(`visitor-email:${clientIP}`, 3, 3600000);
-
         if (!rateLimit.allowed) {
-            return {
-                statusCode: 429,
-                headers,
-                body: JSON.stringify({ 
-                    error: `Rate limit exceeded. Please try again in ${rateLimit.retryAfter} minutes.` 
-                })
-            };
+            return errorResponse(429, `Rate limit exceeded. Please try again in ${rateLimit.retryAfter} minutes.`);
         }
+
+        log('📧 Sending contact email from:', visitorName, visitorEmail);
 
         const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -75,14 +50,11 @@ exports.handler = async (event) => {
                     <p style="white-space: pre-wrap;">${message}</p>
                 </div>
                 <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-                <div style="font-size: 12px; color: #666;">
-                    <p>This message was sent via your AI Portfolio Assistant</p>
-                    <p>Reply directly to this email to respond to ${visitorName}</p>
-                </div>
+                <p style="font-size: 12px; color: #666;">
+                    Sent via AI Portfolio Assistant. Reply directly to respond to ${visitorName}.
+                </p>
             </div>
         `;
-
-        const textContent = `New Message from Portfolio Visitor\n\nName: ${visitorName}\nEmail: ${visitorEmail}\n${context ? `Context: ${context}\n` : ''}\nMessage:\n${message}\n\n---\nSent via AI Portfolio Assistant`;
 
         const result = await resend.emails.send({
             from: 'Portfolio Assistant <onboarding@resend.dev>',
@@ -90,29 +62,19 @@ exports.handler = async (event) => {
             replyTo: visitorEmail,
             subject: `Portfolio Inquiry from ${visitorName}`,
             html: htmlContent,
-            text: textContent
+            text: `New Message from Portfolio Visitor\n\nName: ${visitorName}\nEmail: ${visitorEmail}\n${context ? `Context: ${context}\n` : ''}\nMessage:\n${message}`
         });
 
-        return {
-            statusCode: 200,
-            headers,
-            body: JSON.stringify({ 
-                success: true, 
-                messageId: result.id,
-                message: "Message sent successfully to Disha" 
-            })
-        };
+        log('✅ Email sent, ID:', result.id || result.data?.id);
+
+        return successResponse({ 
+            success: true, 
+            messageId: result.id || result.data?.id,
+            message: "Message sent successfully to Disha" 
+        });
 
     } catch (error) {
-        console.error("Email sending error:", error);
-        return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({ 
-                error: "Failed to send email", 
-                details: error.message 
-            })
-        };
+        logError("Email sending error:", error.message);
+        return errorResponse(500, "Failed to send email", error.message);
     }
 };
-

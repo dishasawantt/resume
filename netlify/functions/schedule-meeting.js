@@ -1,44 +1,47 @@
 const fetch = require('node-fetch');
+const { 
+    log, 
+    logError, 
+    errorResponse, 
+    successResponse, 
+    checkMethod 
+} = require('./utils');
 
-const headers = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type",
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Content-Type": "application/json"
-};
-
-const CALENDLY_FALLBACK = {
+const CALENDLY_URLS = {
     general: "https://calendly.com/dishasawantt",
     quick_chat: "https://calendly.com/dishasawantt/15-minute-meeting",
     consultation: "https://calendly.com/dishasawantt/30min",
     interview: "https://calendly.com/dishasawantt/45-minute-meeting"
 };
 
+const MEETING_TYPES = {
+    quick_chat: { name: '15-Minute Call', duration: 15 },
+    consultation: { name: '30-Minute Consultation', duration: 30 },
+    interview: { name: '45-Minute Interview', duration: 45 }
+};
+
 exports.handler = async (event) => {
-    if (event.httpMethod === "OPTIONS") return { statusCode: 200, headers, body: "" };
-    if (event.httpMethod !== "POST") return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
+    const methodCheck = checkMethod(event.httpMethod);
+    if (methodCheck) return methodCheck;
 
     try {
         const { meetingType = 'consultation' } = JSON.parse(event.body);
+        const typeInfo = MEETING_TYPES[meetingType] || MEETING_TYPES.consultation;
 
+        // Use fallback if no API credentials
         if (!process.env.CALENDLY_API_TOKEN || !process.env.CALENDLY_USER) {
-            const fallbackUrl = CALENDLY_FALLBACK[meetingType] || CALENDLY_FALLBACK.general;
-            return {
-                statusCode: 200,
-                headers,
-                body: JSON.stringify({ 
-                    success: true,
-                    schedulingUrl: fallbackUrl,
-                    eventName: meetingType === 'quick_chat' ? '15-Minute Call' : 
-                              meetingType === 'interview' ? '45-Minute Interview' : 
-                              '30-Minute Consultation',
-                    duration: meetingType === 'quick_chat' ? 15 : meetingType === 'interview' ? 45 : 30,
-                    message: "Here's the link to schedule a meeting with Disha",
-                    fallback: true
-                })
-            };
+            log('Using Calendly fallback URLs');
+            return successResponse({
+                success: true,
+                schedulingUrl: CALENDLY_URLS[meetingType] || CALENDLY_URLS.general,
+                eventName: typeInfo.name,
+                duration: typeInfo.duration,
+                message: "Here's the link to schedule a meeting with Disha",
+                fallback: true
+            });
         }
 
+        // Try Calendly API
         try {
             const userResponse = await fetch('https://api.calendly.com/users/me', {
                 headers: {
@@ -47,9 +50,7 @@ exports.handler = async (event) => {
                 }
             });
 
-            if (!userResponse.ok) {
-                throw new Error('Failed to fetch Calendly user info');
-            }
+            if (!userResponse.ok) throw new Error('Failed to fetch Calendly user');
 
             const userData = await userResponse.json();
             const userUri = userData.resource.uri;
@@ -64,93 +65,61 @@ exports.handler = async (event) => {
                 }
             );
 
-            if (!eventTypesResponse.ok) {
-                throw new Error('Failed to fetch event types');
-            }
+            if (!eventTypesResponse.ok) throw new Error('Failed to fetch event types');
 
-            const eventTypesData = await eventTypesResponse.json();
-            const eventTypes = eventTypesData.collection;
+            const { collection: eventTypes } = await eventTypesResponse.json();
 
-            let selectedEventType;
-            if (meetingType === 'interview') {
-                selectedEventType = eventTypes.find(et => 
-                    et.name.toLowerCase().includes('interview') || 
-                    et.name.toLowerCase().includes('45') ||
-                    et.duration === 45
-                );
-            } else if (meetingType === 'quick_chat') {
-                selectedEventType = eventTypes.find(et => 
-                    et.name.toLowerCase().includes('15') || 
-                    et.name.toLowerCase().includes('quick') ||
-                    et.duration === 15
-                );
-            } else {
-                selectedEventType = eventTypes.find(et => 
-                    et.name.toLowerCase().includes('30') || 
-                    et.name.toLowerCase().includes('consultation') ||
-                    et.duration === 30
-                );
-            }
-
-            if (!selectedEventType && eventTypes.length > 0) {
-                selectedEventType = eventTypes[0];
-            }
+            // Find matching event type
+            const selectedEventType = findEventType(eventTypes, meetingType) || eventTypes[0];
 
             if (!selectedEventType) {
-                const fallbackUrl = CALENDLY_FALLBACK[meetingType] || CALENDLY_FALLBACK.general;
-                return {
-                    statusCode: 200,
-                    headers,
-                    body: JSON.stringify({ 
-                        success: true,
-                        schedulingUrl: fallbackUrl,
-                        message: "Here's the scheduling link",
-                        eventName: "Meeting with Disha",
-                        fallback: true
-                    })
-                };
+                return successResponse({
+                    success: true,
+                    schedulingUrl: CALENDLY_URLS[meetingType] || CALENDLY_URLS.general,
+                    eventName: typeInfo.name,
+                    fallback: true
+                });
             }
 
-            const schedulingUrl = selectedEventType.scheduling_url;
+            log('Found Calendly event:', selectedEventType.name);
 
-            return {
-                statusCode: 200,
-                headers,
-                body: JSON.stringify({ 
-                    success: true,
-                    schedulingUrl: schedulingUrl,
-                    eventName: selectedEventType.name,
-                    duration: selectedEventType.duration,
-                    message: `Here's the link to schedule a ${selectedEventType.name} with Disha`
-                })
-            };
+            return successResponse({
+                success: true,
+                schedulingUrl: selectedEventType.scheduling_url,
+                eventName: selectedEventType.name,
+                duration: selectedEventType.duration,
+                message: `Here's the link to schedule a ${selectedEventType.name} with Disha`
+            });
 
         } catch (apiError) {
-            console.error("Calendly API error:", apiError);
-            
-            const fallbackUrl = CALENDLY_FALLBACK[meetingType] || CALENDLY_FALLBACK.general;
-            return {
-                statusCode: 200,
-                headers,
-                body: JSON.stringify({ 
-                    success: true,
-                    schedulingUrl: fallbackUrl,
-                    message: "Here's the scheduling link",
-                    fallback: true
-                })
-            };
+            logError("Calendly API error:", apiError.message);
+            return successResponse({
+                success: true,
+                schedulingUrl: CALENDLY_URLS[meetingType] || CALENDLY_URLS.general,
+                eventName: typeInfo.name,
+                duration: typeInfo.duration,
+                fallback: true
+            });
         }
 
     } catch (error) {
-        console.error("Meeting scheduling error:", error);
-        return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({ 
-                error: "Failed to generate scheduling link", 
-                details: error.message 
-            })
-        };
+        logError("Meeting scheduling error:", error.message);
+        return errorResponse(500, "Failed to generate scheduling link", error.message);
     }
 };
 
+function findEventType(eventTypes, meetingType) {
+    const searchTerms = {
+        interview: ['interview', '45'],
+        quick_chat: ['15', 'quick'],
+        consultation: ['30', 'consultation']
+    };
+
+    const terms = searchTerms[meetingType] || searchTerms.consultation;
+    const targetDuration = MEETING_TYPES[meetingType]?.duration;
+
+    return eventTypes.find(et => 
+        terms.some(term => et.name.toLowerCase().includes(term)) || 
+        et.duration === targetDuration
+    );
+}

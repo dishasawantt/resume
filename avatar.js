@@ -1,41 +1,46 @@
-const videoGreeting = document.getElementById('video-greeting');
-const videoIdle = document.getElementById('video-idle');
-const videoGoodbye = document.getElementById('video-goodbye');
-const responseArea = document.getElementById('response-area');
-const responseText = document.getElementById('response-text');
-const userInput = document.getElementById('user-input');
-const sendBtn = document.getElementById('send-btn');
-const voiceToggle = document.getElementById('voice-toggle');
-const micBtn = document.getElementById('mic-btn');
-const waveformCanvas = document.getElementById('waveform');
-const suggestions = document.getElementById('suggestions');
-const suggestionBtns = document.querySelectorAll('.suggestion-btn');
-const avatarName = document.getElementById('avatar-name');
-const themeToggle = document.getElementById('theme-toggle');
-const avatarContent = document.querySelector('.avatar-content');
-const chatHistory = document.getElementById('chat-history');
-const voiceSelector = document.getElementById('voice-selector');
-const voiceSelectorToggle = document.getElementById('voice-selector-toggle');
-const voiceDropdownClose = document.getElementById('voice-dropdown-close');
-const voiceSelect = document.getElementById('voice-select');
-const voicePreviewBtn = document.getElementById('voice-preview-btn');
+// DOM Elements
+const elements = {
+    videoGreeting: document.getElementById('video-greeting'),
+    videoIdle: document.getElementById('video-idle'),
+    videoGoodbye: document.getElementById('video-goodbye'),
+    responseArea: document.getElementById('response-area'),
+    responseText: document.getElementById('response-text'),
+    userInput: document.getElementById('user-input'),
+    sendBtn: document.getElementById('send-btn'),
+    voiceToggle: document.getElementById('voice-toggle'),
+    micBtn: document.getElementById('mic-btn'),
+    waveformCanvas: document.getElementById('waveform'),
+    suggestions: document.getElementById('suggestions'),
+    avatarName: document.getElementById('avatar-name'),
+    themeToggle: document.getElementById('theme-toggle'),
+    avatarContent: document.querySelector('.avatar-content'),
+    chatHistory: document.getElementById('chat-history'),
+    voiceSelector: document.getElementById('voice-selector'),
+    voiceSelectorToggle: document.getElementById('voice-selector-toggle'),
+    voiceDropdownClose: document.getElementById('voice-dropdown-close'),
+    voiceSelect: document.getElementById('voice-select'),
+    voicePreviewBtn: document.getElementById('voice-preview-btn')
+};
 
-let currentVideo = null;
-let isProcessing = false;
-let voiceEnabled = true;
-let conversationHistory = [];
-let speechSynthesis = window.speechSynthesis;
-let preferredVoice = null;
-let allVoices = [];
-let isHorizontalLayout = false;
-let messageCount = 0;
-let recognition = null;
-let isListening = false;
-let waveformAnimationId = null;
-let lastAiResponse = '';
-let hasPlayedGoodbye = false;
-let pendingToolCall = null;
+// State
+const state = {
+    currentVideo: null,
+    isProcessing: false,
+    voiceEnabled: true,
+    conversationHistory: [],
+    preferredVoice: null,
+    allVoices: [],
+    isHorizontalLayout: false,
+    messageCount: 0,
+    recognition: null,
+    isListening: false,
+    waveformAnimationId: null,
+    lastAiResponse: '',
+    hasPlayedGoodbye: false,
+    pendingToolCall: null
+};
 
+// Configuration
 const quickActions = {
     resume: { text: "Download Resume", href: "Disha Sawant Resume 2025.pdf", icon: "fa-download" },
     github: { text: "View GitHub", href: "https://github.com/dishasawantt", icon: "fa-github" },
@@ -48,8 +53,8 @@ const easterEggs = {
     triggers: ['konami', 'secret', 'easter egg', 'hidden', 'surprise me'],
     responses: [
         "You found a secret! Fun fact: I once debugged code for 6 hours only to find a missing semicolon.",
-        "Easter egg unlocked! Did you know I've completed 72 LinkedIn Learning courses? I love continuous learning!",
-        "Secret discovered! Did you know this entire avatar experience was built with vanilla JavaScript?",
+        "Easter egg unlocked! Did you know I've completed 72 LinkedIn Learning courses?",
+        "Secret discovered! This entire avatar experience was built with vanilla JavaScript.",
         "Hidden message found! When I'm not coding, you'll find me painting watercolors or singing bhajans."
     ]
 };
@@ -61,6 +66,7 @@ const suggestionSets = [
     [{ text: "Education", query: "What is your educational background?" }, { text: "Big Data", query: "Tell me about your Big Data certifications" }, { text: "Best Project", query: "What's your most impactful project?" }, { text: "Why AI?", query: "Why are you passionate about AI?" }]
 ];
 
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadPreferredVoice();
     setupVoiceInput();
@@ -73,22 +79,25 @@ document.addEventListener('DOMContentLoaded', () => {
     preloadVideos();
 });
 
+// Theme
 function setupThemeToggle() {
     const savedTheme = localStorage.getItem('avatarTheme') || 'dark';
     if (savedTheme === 'light') document.documentElement.setAttribute('data-theme', 'light');
-    themeToggle.addEventListener('click', () => {
+    elements.themeToggle.addEventListener('click', () => {
         const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('avatarTheme', newTheme);
     });
 }
 
+// Layout
 function switchToHorizontalLayout() {
-    if (isHorizontalLayout) return;
-    isHorizontalLayout = true;
-    avatarContent.classList.add('horizontal');
+    if (state.isHorizontalLayout) return;
+    state.isHorizontalLayout = true;
+    elements.avatarContent.classList.add('horizontal');
 }
 
+// Chat History
 function addToChatHistory(message, isUser = false) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${isUser ? 'user' : 'ai'}`;
@@ -96,40 +105,59 @@ function addToChatHistory(message, isUser = false) {
     contentDiv.className = 'message-content';
     contentDiv.innerHTML = message.replace(/\n/g, '<br>');
     messageDiv.appendChild(contentDiv);
-    chatHistory.appendChild(messageDiv);
-    chatHistory.scrollTop = chatHistory.scrollHeight;
+    elements.chatHistory.appendChild(messageDiv);
+    elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
 }
 
+// Greeting
 function getGreetingMessage() {
     const hour = new Date().getHours();
     const timeGreeting = hour >= 5 && hour < 12 ? "Good morning" : hour >= 12 && hour < 17 ? "Good afternoon" : hour >= 17 && hour < 21 ? "Good evening" : "Hello";
     return `${timeGreeting} and Namaste, I am Disha. Feel free to ask me anything about my background, projects, or experience.`;
 }
 
+// Suggestions
 function setupRotatingSuggestions() {
     const randomSet = suggestionSets[Math.floor(Math.random() * suggestionSets.length)];
-    suggestions.querySelectorAll('.suggestion-btn').forEach((btn, i) => {
-        if (randomSet[i]) { btn.textContent = randomSet[i].text; btn.setAttribute('data-query', randomSet[i].query); }
+    elements.suggestions.querySelectorAll('.suggestion-btn').forEach((btn, i) => {
+        if (randomSet[i]) {
+            btn.textContent = randomSet[i].text;
+            btn.setAttribute('data-query', randomSet[i].query);
+        }
     });
 }
 
+// Voice
 function loadPreferredVoice() {
     const loadVoices = () => {
-        allVoices = speechSynthesis.getVoices();
-        populateVoiceSelector(allVoices);
+        state.allVoices = speechSynthesis.getVoices();
+        populateVoiceSelector(state.allVoices);
+        
         const savedVoiceName = localStorage.getItem('preferredVoice');
         if (savedVoiceName) {
-            const savedVoice = allVoices.find(v => v.name === savedVoiceName);
-            if (savedVoice) { preferredVoice = savedVoice; voiceSelect.value = savedVoiceName; return; }
+            const savedVoice = state.allVoices.find(v => v.name === savedVoiceName);
+            if (savedVoice) {
+                state.preferredVoice = savedVoice;
+                elements.voiceSelect.value = savedVoiceName;
+                return;
+            }
         }
+        
         const preferredNames = ['Samantha', 'Karen', 'Google US English Female', 'Microsoft Zira', 'Fiona'];
         for (const name of preferredNames) {
-            const found = allVoices.find(v => v.name.includes(name));
-            if (found) { preferredVoice = found; voiceSelect.value = found.name; break; }
+            const found = state.allVoices.find(v => v.name.includes(name));
+            if (found) {
+                state.preferredVoice = found;
+                elements.voiceSelect.value = found.name;
+                break;
+            }
         }
-        if (!preferredVoice) {
-            preferredVoice = allVoices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) || allVoices.find(v => v.lang.startsWith('en')) || allVoices[0];
-            if (preferredVoice) voiceSelect.value = preferredVoice.name;
+        
+        if (!state.preferredVoice) {
+            state.preferredVoice = state.allVoices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) 
+                || state.allVoices.find(v => v.lang.startsWith('en')) 
+                || state.allVoices[0];
+            if (state.preferredVoice) elements.voiceSelect.value = state.preferredVoice.name;
         }
     };
     loadVoices();
@@ -137,92 +165,129 @@ function loadPreferredVoice() {
 }
 
 function populateVoiceSelector(voices) {
-    voiceSelect.innerHTML = '';
+    elements.voiceSelect.innerHTML = '';
     const englishVoices = voices.filter(v => v.lang.startsWith('en'));
     const otherVoices = voices.filter(v => !v.lang.startsWith('en'));
-    if (englishVoices.length) {
-        const engGroup = document.createElement('optgroup');
-        engGroup.label = 'English Voices';
-        englishVoices.forEach(v => { const o = document.createElement('option'); o.value = v.name; o.textContent = `${v.name} (${v.lang})`; engGroup.appendChild(o); });
-        voiceSelect.appendChild(engGroup);
-    }
-    if (otherVoices.length) {
-        const otherGroup = document.createElement('optgroup');
-        otherGroup.label = 'Other Languages';
-        otherVoices.forEach(v => { const o = document.createElement('option'); o.value = v.name; o.textContent = `${v.name} (${v.lang})`; otherGroup.appendChild(o); });
-        voiceSelect.appendChild(otherGroup);
-    }
+    
+    [{ voices: englishVoices, label: 'English Voices' }, { voices: otherVoices, label: 'Other Languages' }].forEach(({ voices: voiceList, label }) => {
+        if (voiceList.length) {
+            const group = document.createElement('optgroup');
+            group.label = label;
+            voiceList.forEach(v => {
+                const option = document.createElement('option');
+                option.value = v.name;
+                option.textContent = `${v.name} (${v.lang})`;
+                group.appendChild(option);
+            });
+            elements.voiceSelect.appendChild(group);
+        }
+    });
 }
 
 function setupVoiceSelector() {
-    if (!voiceSelectorToggle) return;
-    voiceSelectorToggle.addEventListener('click', () => voiceSelector.classList.toggle('open'));
-    voiceDropdownClose.addEventListener('click', () => voiceSelector.classList.remove('open'));
-    document.addEventListener('click', (e) => { if (!voiceSelector.contains(e.target)) voiceSelector.classList.remove('open'); });
-    voiceSelect.addEventListener('change', () => {
-        const selectedVoice = allVoices.find(v => v.name === voiceSelect.value);
-        if (selectedVoice) { preferredVoice = selectedVoice; localStorage.setItem('preferredVoice', voiceSelect.value); }
+    if (!elements.voiceSelectorToggle) return;
+    
+    elements.voiceSelectorToggle.addEventListener('click', () => elements.voiceSelector.classList.toggle('open'));
+    elements.voiceDropdownClose.addEventListener('click', () => elements.voiceSelector.classList.remove('open'));
+    document.addEventListener('click', (e) => {
+        if (!elements.voiceSelector.contains(e.target)) elements.voiceSelector.classList.remove('open');
     });
-    voicePreviewBtn.addEventListener('click', () => speak("Hello, this is how I will sound when speaking."));
+    
+    elements.voiceSelect.addEventListener('change', () => {
+        const selectedVoice = state.allVoices.find(v => v.name === elements.voiceSelect.value);
+        if (selectedVoice) {
+            state.preferredVoice = selectedVoice;
+            localStorage.setItem('preferredVoice', elements.voiceSelect.value);
+        }
+    });
+    
+    elements.voicePreviewBtn.addEventListener('click', () => speak("Hello, this is how I will sound when speaking."));
 }
 
 function speak(text) {
-    if (!voiceEnabled || !text) return;
+    if (!state.voiceEnabled || !text) return;
     speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.voice = preferredVoice;
+    utterance.voice = state.preferredVoice;
     utterance.rate = 0.95;
     utterance.pitch = 1.0;
-    utterance.onstart = () => startWaveformAnimation();
-    utterance.onend = () => stopWaveformAnimation();
+    utterance.onstart = startWaveformAnimation;
+    utterance.onend = stopWaveformAnimation;
     speechSynthesis.speak(utterance);
 }
 
+function toggleVoice() {
+    state.voiceEnabled = !state.voiceEnabled;
+    elements.voiceToggle.classList.toggle('muted', !state.voiceEnabled);
+    if (!state.voiceEnabled) {
+        speechSynthesis.cancel();
+        stopWaveformAnimation();
+    }
+}
+
+// Voice Input
 function setupVoiceInput() {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        if (micBtn) micBtn.style.display = 'none';
+        if (elements.micBtn) elements.micBtn.style.display = 'none';
         return;
     }
+    
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-    recognition.onstart = () => { isListening = true; micBtn?.classList.add('listening'); userInput.placeholder = 'Listening...'; };
-    recognition.onresult = (event) => {
-        let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) transcript += event.results[i][0].transcript;
-        userInput.value = transcript;
-        if (event.results[event.results.length - 1].isFinal) { stopListening(); handleSend(); }
+    state.recognition = new SpeechRecognition();
+    state.recognition.continuous = false;
+    state.recognition.interimResults = true;
+    state.recognition.lang = 'en-US';
+    
+    state.recognition.onstart = () => {
+        state.isListening = true;
+        elements.micBtn?.classList.add('listening');
+        elements.userInput.placeholder = 'Listening...';
     };
-    recognition.onerror = () => stopListening();
-    recognition.onend = () => stopListening();
+    
+    state.recognition.onresult = (event) => {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+        }
+        elements.userInput.value = transcript;
+        if (event.results[event.results.length - 1].isFinal) {
+            stopListening();
+            handleSend();
+        }
+    };
+    
+    state.recognition.onerror = stopListening;
+    state.recognition.onend = stopListening;
 }
 
 function startListening() {
-    if (!recognition || isListening || isProcessing) return;
-    try { recognition.start(); } catch (e) { console.error('Could not start recognition:', e); }
+    if (!state.recognition || state.isListening || state.isProcessing) return;
+    try { state.recognition.start(); } catch (e) { console.error('Could not start recognition:', e); }
 }
 
 function stopListening() {
-    isListening = false;
-    micBtn?.classList.remove('listening');
-    userInput.placeholder = 'Ask me anything...';
-    try { recognition?.stop(); } catch (e) {}
+    state.isListening = false;
+    elements.micBtn?.classList.remove('listening');
+    elements.userInput.placeholder = 'Ask me anything...';
+    try { state.recognition?.stop(); } catch (e) {}
 }
 
+// Waveform Animation
 function startWaveformAnimation() {
-    if (!waveformCanvas) return;
-    const ctx = waveformCanvas.getContext('2d');
+    if (!elements.waveformCanvas) return;
+    const ctx = elements.waveformCanvas.getContext('2d');
     const bufferLength = 64;
     const dataArray = new Uint8Array(bufferLength);
+    
     const draw = () => {
-        waveformAnimationId = requestAnimationFrame(draw);
+        state.waveformAnimationId = requestAnimationFrame(draw);
         for (let i = 0; i < bufferLength; i++) dataArray[i] = Math.random() * 100 + 50;
-        const { width, height } = waveformCanvas;
+        
+        const { width, height } = elements.waveformCanvas;
         ctx.clearRect(0, 0, width, height);
         const barWidth = (width / bufferLength) * 2.5;
         let x = 0;
+        
         for (let i = 0; i < bufferLength; i++) {
             const barHeight = (dataArray[i] / 255) * height * 0.8;
             const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
@@ -233,153 +298,197 @@ function startWaveformAnimation() {
             x += barWidth;
         }
     };
-    waveformCanvas.classList.add('active');
+    
+    elements.waveformCanvas.classList.add('active');
     draw();
 }
 
 function stopWaveformAnimation() {
-    if (waveformAnimationId) { cancelAnimationFrame(waveformAnimationId); waveformAnimationId = null; }
-    if (waveformCanvas) {
-        waveformCanvas.classList.remove('active');
-        waveformCanvas.getContext('2d').clearRect(0, 0, waveformCanvas.width, waveformCanvas.height);
+    if (state.waveformAnimationId) {
+        cancelAnimationFrame(state.waveformAnimationId);
+        state.waveformAnimationId = null;
+    }
+    if (elements.waveformCanvas) {
+        elements.waveformCanvas.classList.remove('active');
+        elements.waveformCanvas.getContext('2d').clearRect(0, 0, elements.waveformCanvas.width, elements.waveformCanvas.height);
     }
 }
 
+// Video Controls
 function switchVideo(videoElement, loop = false) {
-    [videoGreeting, videoIdle, videoGoodbye].forEach(v => { if (v !== videoElement) { v.classList.remove('active'); v.pause(); } });
+    [elements.videoGreeting, elements.videoIdle, elements.videoGoodbye].forEach(v => {
+        if (v !== videoElement) {
+            v.classList.remove('active');
+            v.pause();
+        }
+    });
     videoElement.classList.add('active');
     videoElement.loop = loop;
     videoElement.muted = true;
     videoElement.currentTime = 0;
     videoElement.play().catch(() => document.addEventListener('click', () => videoElement.play(), { once: true }));
-    currentVideo = videoElement;
+    state.currentVideo = videoElement;
 }
 
 function playGreeting() {
     const greetingMessage = getGreetingMessage();
     const greetingText = document.querySelector('.greeting-text');
     if (greetingText) greetingText.textContent = greetingMessage;
+    
     const startVideo = () => {
-        switchVideo(videoGreeting, true);
+        switchVideo(elements.videoGreeting, true);
         setTimeout(() => displayResponse(greetingMessage), 500);
     };
-    if (videoGreeting.readyState >= 3) startVideo();
-    else videoGreeting.addEventListener('canplay', startVideo, { once: true });
+    
+    if (elements.videoGreeting.readyState >= 3) startVideo();
+    else elements.videoGreeting.addEventListener('canplay', startVideo, { once: true });
 }
 
-function playIdle() { switchVideo(videoIdle, true); }
-function playGoodbye() { switchVideo(videoGoodbye, false); displayResponse("Thank you for visiting. Goodbye!"); }
+function playIdle() { switchVideo(elements.videoIdle, true); }
+function playGoodbye() { switchVideo(elements.videoGoodbye, false); displayResponse("Thank you for visiting. Goodbye!"); }
 
+function preloadVideos() {
+    [elements.videoGreeting, elements.videoIdle, elements.videoGoodbye].forEach(v => {
+        v.muted = true;
+        v.volume = 0;
+        v.load();
+    });
+}
+
+// Event Listeners
 function setupEventListeners() {
-    sendBtn.addEventListener('click', handleSend);
-    userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
-    voiceToggle.addEventListener('click', toggleVoice);
-    micBtn?.addEventListener('click', () => isListening ? stopListening() : startListening());
-    suggestionBtns.forEach(btn => btn.addEventListener('click', () => { userInput.value = btn.getAttribute('data-query'); handleSend(); }));
-    document.querySelectorAll('.quick-action-btn[data-query]').forEach(btn => btn.addEventListener('click', () => { userInput.value = btn.getAttribute('data-query'); handleSend(); }));
-}
-
-function toggleVoice() {
-    voiceEnabled = !voiceEnabled;
-    voiceToggle.classList.toggle('muted', !voiceEnabled);
-    if (!voiceEnabled) { speechSynthesis.cancel(); stopWaveformAnimation(); }
+    elements.sendBtn.addEventListener('click', handleSend);
+    elements.userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
+        }
+    });
+    elements.voiceToggle.addEventListener('click', toggleVoice);
+    elements.micBtn?.addEventListener('click', () => state.isListening ? stopListening() : startListening());
+    
+    document.querySelectorAll('.suggestion-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            elements.userInput.value = btn.getAttribute('data-query');
+            handleSend();
+        });
+    });
+    
+    document.querySelectorAll('.quick-action-btn[data-query]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            elements.userInput.value = btn.getAttribute('data-query');
+            handleSend();
+        });
+    });
 }
 
 function handlePageLeave() {
     document.querySelector('.close-btn').addEventListener('click', (e) => {
         e.preventDefault();
-        if (!hasPlayedGoodbye) { hasPlayedGoodbye = true; playGoodbye(); setTimeout(() => window.location.href = 'index.html', 2500); }
+        if (!state.hasPlayedGoodbye) {
+            state.hasPlayedGoodbye = true;
+            playGoodbye();
+            setTimeout(() => window.location.href = 'index.html', 2500);
+        }
     });
-    window.addEventListener('pagehide', () => { speechSynthesis.cancel(); stopWaveformAnimation(); });
-    window.addEventListener('beforeunload', () => { speechSynthesis.cancel(); });
-    document.addEventListener('visibilitychange', () => { if (document.hidden) { speechSynthesis.cancel(); stopWaveformAnimation(); } });
+    
+    const cleanup = () => {
+        speechSynthesis.cancel();
+        stopWaveformAnimation();
+    };
+    
+    window.addEventListener('pagehide', cleanup);
+    window.addEventListener('beforeunload', () => speechSynthesis.cancel());
+    document.addEventListener('visibilitychange', () => { if (document.hidden) cleanup(); });
 }
 
+// Message Handling
 async function handleSend() {
-    const message = userInput.value.trim();
-    if (!message || isProcessing) return;
-    isProcessing = true;
-    sendBtn.disabled = true;
-    userInput.value = '';
-    messageCount++;
+    const message = elements.userInput.value.trim();
+    if (!message || state.isProcessing) return;
+    
+    state.isProcessing = true;
+    elements.sendBtn.disabled = true;
+    elements.userInput.value = '';
+    state.messageCount++;
 
-    if (messageCount === 1) {
-        const currentGreeting = responseText.textContent;
-        if (currentGreeting) { addToChatHistory(currentGreeting, false); lastAiResponse = currentGreeting; }
+    // First message handling
+    if (state.messageCount === 1) {
+        const currentGreeting = elements.responseText.textContent;
+        if (currentGreeting) {
+            addToChatHistory(currentGreeting, false);
+            state.lastAiResponse = currentGreeting;
+        }
         switchToHorizontalLayout();
-        if (currentVideo === videoGreeting) switchVideo(videoIdle, true);
-    } else if (lastAiResponse) addToChatHistory(lastAiResponse, false);
+        if (state.currentVideo === elements.videoGreeting) switchVideo(elements.videoIdle, true);
+    } else if (state.lastAiResponse) {
+        addToChatHistory(state.lastAiResponse, false);
+    }
 
     addToChatHistory(message, true);
-    suggestions.style.display = 'none';
+    elements.suggestions.style.display = 'none';
     document.getElementById('quick-actions')?.style.setProperty('display', 'none');
 
+    // Easter egg check
     const easterEggResponse = checkEasterEgg(message);
     if (easterEggResponse) {
         setThinkingState(true);
         await delay(800);
         setThinkingState(false);
         displayResponse(easterEggResponse, []);
-        lastAiResponse = easterEggResponse;
-        isProcessing = false;
-        sendBtn.disabled = false;
+        state.lastAiResponse = easterEggResponse;
+        state.isProcessing = false;
+        elements.sendBtn.disabled = false;
         return;
     }
 
     setThinkingState(true);
-    conversationHistory.push({ role: 'user', content: message });
+    state.conversationHistory.push({ role: 'user', content: message });
 
     try {
         const response = await fetch('/.netlify/functions/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                message, 
-                history: conversationHistory.slice(-10),
-                toolExecutionData: pendingToolCall
+            body: JSON.stringify({
+                message,
+                history: state.conversationHistory.slice(-10),
+                toolExecutionData: state.pendingToolCall
             })
         });
         
         if (!response.ok) throw new Error('Request failed');
         const data = await response.json();
 
-        if (pendingToolCall) {
-            pendingToolCall = null;
-            setThinkingState(false);
-            
-            if (data.schedulingUrl) {
-                displayResponse(data.response, []);
-                addSchedulingCard(data.schedulingUrl, data.eventName, data.duration);
-            } else {
-                displayResponse(data.response, []);
-            }
-            
-            lastAiResponse = data.response;
-            conversationHistory.push({ role: 'assistant', content: data.response });
-        } else if (data.toolCall && data.toolCall.requiresApproval) {
-            pendingToolCall = data.toolCall;
-            setThinkingState(false);
+        setThinkingState(false);
+
+        if (state.pendingToolCall) {
+            state.pendingToolCall = null;
             displayResponse(data.response, []);
-            lastAiResponse = data.response;
-            conversationHistory.push({ role: 'assistant', content: data.response });
+            if (data.schedulingUrl) addSchedulingCard(data.schedulingUrl, data.eventName, data.duration);
+            state.lastAiResponse = data.response;
+            state.conversationHistory.push({ role: 'assistant', content: data.response });
+        } else if (data.toolCall?.requiresApproval) {
+            state.pendingToolCall = data.toolCall;
+            displayResponse(data.response, []);
+            state.lastAiResponse = data.response;
+            state.conversationHistory.push({ role: 'assistant', content: data.response });
             addApprovalButtons(data.toolCall);
         } else {
             const botResponse = data.response || "I apologize, but I could not process that request.";
-            conversationHistory.push({ role: 'assistant', content: botResponse });
-            setThinkingState(false);
+            state.conversationHistory.push({ role: 'assistant', content: botResponse });
             displayResponse(botResponse, getContextualActions(message, botResponse));
-            lastAiResponse = botResponse;
+            state.lastAiResponse = botResponse;
         }
     } catch (error) {
         console.error('Error:', error);
         setThinkingState(false);
-        const errorMsg = "I am having trouble connecting at the moment. Please try again or reach out via email at dishasawantt@gmail.com.";
+        const errorMsg = "I am having trouble connecting. Please try again or reach out via email at dishasawantt@gmail.com.";
         displayResponse(errorMsg, ['email']);
-        lastAiResponse = errorMsg;
+        state.lastAiResponse = errorMsg;
     } finally {
-        isProcessing = false;
-        sendBtn.disabled = false;
-        userInput.focus();
+        state.isProcessing = false;
+        elements.sendBtn.disabled = false;
+        elements.userInput.focus();
     }
 }
 
@@ -387,41 +496,51 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function checkEasterEgg(message) {
     const lower = message.toLowerCase();
-    if (easterEggs.triggers.some(t => lower.includes(t))) return easterEggs.responses[Math.floor(Math.random() * easterEggs.responses.length)];
+    if (easterEggs.triggers.some(t => lower.includes(t))) {
+        return easterEggs.responses[Math.floor(Math.random() * easterEggs.responses.length)];
+    }
     return null;
 }
 
 function getContextualActions(userMessage, botResponse) {
     const lower = (userMessage + ' ' + botResponse).toLowerCase();
+    const actionMap = {
+        resume: ['resume', 'cv', 'hire'],
+        github: ['project', 'code', 'github'],
+        projects: ['project', 'code'],
+        email: ['contact', 'reach', 'connect', 'interview'],
+        linkedin: ['linkedin', 'network', 'connect']
+    };
+    
     const actions = [];
-    if (lower.includes('resume') || lower.includes('cv') || lower.includes('hire')) actions.push('resume');
-    if (lower.includes('project') || lower.includes('code') || lower.includes('github')) actions.push('github', 'projects');
-    if (lower.includes('contact') || lower.includes('reach') || lower.includes('connect') || lower.includes('interview')) actions.push('email', 'linkedin');
-    if (lower.includes('linkedin') || lower.includes('network')) actions.push('linkedin');
+    for (const [action, keywords] of Object.entries(actionMap)) {
+        if (keywords.some(k => lower.includes(k))) actions.push(action);
+    }
     return [...new Set(actions)].slice(0, 2);
 }
 
+// UI State
 function setThinkingState(thinking) {
     if (thinking) {
-        avatarName.classList.add('thinking');
-        responseText.innerHTML = '<div class="thinking-indicator"><span>Thinking</span><div class="thinking-dots"><span></span><span></span><span></span></div></div>';
+        elements.avatarName.classList.add('thinking');
+        elements.responseText.innerHTML = '<div class="thinking-indicator"><span>Thinking</span><div class="thinking-dots"><span></span><span></span><span></span></div></div>';
         playIdle();
     } else {
-        avatarName.classList.remove('thinking');
+        elements.avatarName.classList.remove('thinking');
     }
 }
 
 function displayResponse(text, actionKeys = []) {
-    const onComplete = () => { if (actionKeys.length) showQuickActions(actionKeys); };
-    if (voiceEnabled) speak(text);
-    typeText(text, onComplete);
-    responseArea.scrollTop = 0;
+    if (state.voiceEnabled) speak(text);
+    typeText(text, () => { if (actionKeys.length) showQuickActions(actionKeys); });
+    elements.responseArea.scrollTop = 0;
 }
 
 function showQuickActions(actionKeys) {
     document.querySelector('.quick-actions')?.remove();
     const container = document.createElement('div');
     container.className = 'quick-actions';
+    
     actionKeys.forEach(key => {
         const action = quickActions[key];
         if (action) {
@@ -435,27 +554,29 @@ function showQuickActions(actionKeys) {
             container.appendChild(link);
         }
     });
+    
     document.querySelector('.chat-section').insertBefore(container, document.querySelector('.input-area'));
     requestAnimationFrame(() => container.classList.add('visible'));
 }
 
 function typeText(text, onComplete = null) {
-    responseText.innerHTML = '<span class="cursor">|</span>';
+    elements.responseText.innerHTML = '<span class="cursor">|</span>';
     document.querySelector('.quick-actions')?.remove();
-    const cursor = responseText.querySelector('.cursor');
+    const cursor = elements.responseText.querySelector('.cursor');
     const chars = text.split('');
     let i = 0;
+    
     const typeChar = () => {
         if (i < chars.length) {
             const char = chars[i];
             const span = document.createElement('span');
             span.className = 'char';
             span.innerHTML = char === '\n' ? '<br>' : char === ' ' ? ' ' : char;
-            responseText.insertBefore(span, cursor);
+            elements.responseText.insertBefore(span, cursor);
             i++;
-            responseArea.scrollTop = responseArea.scrollHeight;
-            const delay = '.!?'.includes(char) ? 150 : ',;:'.includes(char) ? 80 : 25;
-            setTimeout(typeChar, delay);
+            elements.responseArea.scrollTop = elements.responseArea.scrollHeight;
+            const charDelay = '.!?'.includes(char) ? 150 : ',;:'.includes(char) ? 80 : 25;
+            setTimeout(typeChar, charDelay);
         } else {
             cursor.remove();
             if (onComplete) onComplete();
@@ -464,27 +585,22 @@ function typeText(text, onComplete = null) {
     typeChar();
 }
 
-function preloadVideos() { [videoGreeting, videoIdle, videoGoodbye].forEach(v => { v.muted = true; v.volume = 0; v.load(); }); }
-
+// Tool Approval UI
 function addApprovalButtons(toolCall) {
     document.querySelector('.tool-approval-buttons')?.remove();
     
     const approvalDiv = document.createElement('div');
     approvalDiv.className = 'tool-approval-buttons';
     
+    const buttonLabels = {
+        send_contact_email: '<i class="fas fa-paper-plane"></i> Send Message',
+        send_documents: '<i class="fas fa-file-pdf"></i> Send Documents',
+        schedule_meeting: '<i class="fas fa-calendar-check"></i> Get Link'
+    };
+    
     const approveBtn = document.createElement('button');
     approveBtn.className = 'btn btn-approve';
-    
-    if (toolCall.function === 'send_contact_email') {
-        approveBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
-    } else if (toolCall.function === 'send_documents') {
-        approveBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Send Documents';
-    } else if (toolCall.function === 'schedule_meeting') {
-        approveBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Get Link';
-    } else {
-        approveBtn.innerHTML = '<i class="fas fa-check"></i> Proceed';
-    }
-    
+    approveBtn.innerHTML = buttonLabels[toolCall.function] || '<i class="fas fa-check"></i> Proceed';
     approveBtn.onclick = async () => {
         approvalDiv.remove();
         setThinkingState(true);
@@ -495,20 +611,17 @@ function addApprovalButtons(toolCall) {
     cancelBtn.className = 'btn btn-cancel';
     cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
     cancelBtn.onclick = () => {
-        pendingToolCall = null;
+        state.pendingToolCall = null;
         approvalDiv.remove();
         const cancelMsg = "No problem! Let me know if you need anything else.";
         addToChatHistory(cancelMsg, false);
-        lastAiResponse = cancelMsg;
-        conversationHistory.push({ role: 'assistant', content: cancelMsg });
+        state.lastAiResponse = cancelMsg;
+        state.conversationHistory.push({ role: 'assistant', content: cancelMsg });
     };
     
     approvalDiv.appendChild(approveBtn);
     approvalDiv.appendChild(cancelBtn);
-    
-    const chatSection = document.querySelector('.chat-section');
-    const inputArea = document.querySelector('.input-area');
-    chatSection.insertBefore(approvalDiv, inputArea);
+    document.querySelector('.chat-section').insertBefore(approvalDiv, document.querySelector('.input-area'));
 }
 
 function addSchedulingCard(url, eventName, duration) {
@@ -516,7 +629,6 @@ function addSchedulingCard(url, eventName, duration) {
     
     const cardDiv = document.createElement('div');
     cardDiv.className = 'scheduling-card';
-    
     const durationText = duration ? `${duration} minutes` : '';
     
     cardDiv.innerHTML = `
@@ -533,10 +645,7 @@ function addSchedulingCard(url, eventName, duration) {
         </button>
     `;
     
-    const chatSection = document.querySelector('.chat-section');
-    const inputArea = document.querySelector('.input-area');
-    chatSection.insertBefore(cardDiv, inputArea);
-    
+    document.querySelector('.chat-section').insertBefore(cardDiv, document.querySelector('.input-area'));
     setTimeout(() => cardDiv.classList.add('visible'), 100);
 }
 
@@ -550,9 +659,7 @@ function copySchedulingLink(url) {
             btn.innerHTML = originalHTML;
             btn.style.background = '';
         }, 2000);
-    }).catch(err => {
-        console.error('Failed to copy:', err);
-    });
+    }).catch(err => console.error('Failed to copy:', err));
 }
 
 window.copySchedulingLink = copySchedulingLink;

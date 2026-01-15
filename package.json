@@ -18,5 +18,8 @@
     "ai"
   ],
   "author": "Disha Sawant",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "netlify-cli": "^23.13.3"
+  }
 }
