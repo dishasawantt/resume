@@ -458,6 +458,10 @@ async function handleSend() {
         
         if (!response.ok) throw new Error('Request failed');
         const data = await response.json();
+        
+        console.log('📥 Response data:', data);
+        console.log('📥 pendingToolCall:', state.pendingToolCall);
+        console.log('📥 toolCall in response:', data.toolCall);
 
         setThinkingState(false);
 
@@ -468,12 +472,16 @@ async function handleSend() {
             state.lastAiResponse = data.response;
             state.conversationHistory.push({ role: 'assistant', content: data.response });
         } else if (data.toolCall?.requiresApproval) {
+            console.log('✅ Got toolCall with approval required:', data.toolCall);
             state.pendingToolCall = data.toolCall;
             displayResponse(data.response, []);
             state.lastAiResponse = data.response;
             state.conversationHistory.push({ role: 'assistant', content: data.response });
+            console.log('🔘 Adding approval buttons...');
             addApprovalButtons(data.toolCall);
         } else {
+            console.log('💬 Regular response (no toolCall)');
+
             const botResponse = data.response || "I apologize, but I could not process that request.";
             state.conversationHistory.push({ role: 'assistant', content: botResponse });
             displayResponse(botResponse, getContextualActions(message, botResponse));
@@ -604,7 +612,41 @@ function addApprovalButtons(toolCall) {
     approveBtn.onclick = async () => {
         approvalDiv.remove();
         setThinkingState(true);
-        await handleSend();
+        
+        try {
+            console.log('🚀 Executing tool:', state.pendingToolCall);
+            const response = await fetch('/.netlify/functions/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: '',
+                    history: state.conversationHistory.slice(-10),
+                    toolExecutionData: state.pendingToolCall
+                })
+            });
+            
+            if (!response.ok) throw new Error('Request failed');
+            const data = await response.json();
+            console.log('📥 Tool execution result:', data);
+            
+            state.pendingToolCall = null;
+            setThinkingState(false);
+            displayResponse(data.response, []);
+            
+            if (data.schedulingUrl) {
+                addSchedulingCard(data.schedulingUrl, data.eventName, data.duration);
+            }
+            
+            state.lastAiResponse = data.response;
+            state.conversationHistory.push({ role: 'assistant', content: data.response });
+            addToChatHistory(data.response, false);
+        } catch (error) {
+            console.error('Tool execution error:', error);
+            setThinkingState(false);
+            const errorMsg = "I had trouble with that. Please try again.";
+            displayResponse(errorMsg, []);
+            state.pendingToolCall = null;
+        }
     };
     
     const cancelBtn = document.createElement('button');

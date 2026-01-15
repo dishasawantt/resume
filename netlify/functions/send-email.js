@@ -1,4 +1,4 @@
-const { Resend } = require('resend');
+const sgMail = require('@sendgrid/mail');
 const { 
     headers, 
     checkRateLimit, 
@@ -35,7 +35,8 @@ exports.handler = async (event) => {
 
         log('📧 Sending contact email from:', visitorName, visitorEmail);
 
-        const resend = new Resend(process.env.RESEND_API_KEY);
+        // Initialize SendGrid
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
         const htmlContent = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -56,25 +57,33 @@ exports.handler = async (event) => {
             </div>
         `;
 
-        const result = await resend.emails.send({
-            from: 'Portfolio Assistant <onboarding@resend.dev>',
-            to: ['dishasawantt@gmail.com'],
+        const msg = {
+            to: 'dishasawantt@gmail.com',
+            from: {
+                email: 'dishasawantt@gmail.com',
+                name: 'Portfolio Assistant'
+            },
             replyTo: visitorEmail,
             subject: `Portfolio Inquiry from ${visitorName}`,
-            html: htmlContent,
-            text: `New Message from Portfolio Visitor\n\nName: ${visitorName}\nEmail: ${visitorEmail}\n${context ? `Context: ${context}\n` : ''}\nMessage:\n${message}`
-        });
+            text: `New Message from Portfolio Visitor\n\nName: ${visitorName}\nEmail: ${visitorEmail}\n${context ? `Context: ${context}\n` : ''}\nMessage:\n${message}`,
+            html: htmlContent
+        };
 
-        log('✅ Email sent, ID:', result.id || result.data?.id);
+        const result = await sgMail.send(msg);
+
+        log('✅ Email sent, status:', result[0]?.statusCode);
 
         return successResponse({ 
             success: true, 
-            messageId: result.id || result.data?.id,
+            messageId: result[0]?.headers?.['x-message-id'],
             message: "Message sent successfully to Disha" 
         });
 
     } catch (error) {
         logError("Email sending error:", error.message);
+        if (error.response) {
+            logError("SendGrid error details:", error.response.body);
+        }
         return errorResponse(500, "Failed to send email", error.message);
     }
 };

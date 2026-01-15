@@ -1,4 +1,4 @@
-const { Resend } = require('resend');
+const sgMail = require('@sendgrid/mail');
 const fs = require('fs');
 const path = require('path');
 const { 
@@ -54,7 +54,12 @@ exports.handler = async (event) => {
                 try {
                     const filePath = path.join(process.cwd(), doc.path);
                     const fileContent = fs.readFileSync(filePath);
-                    attachments.push({ filename: doc.name, content: fileContent });
+                    attachments.push({ 
+                        filename: doc.name, 
+                        content: fileContent.toString('base64'),
+                        type: 'application/pdf',
+                        disposition: 'attachment'
+                    });
                     documentList.push(doc.description);
                 } catch (fileError) {
                     logError(`Error reading file ${doc.path}:`, fileError.message);
@@ -66,7 +71,9 @@ exports.handler = async (event) => {
             return errorResponse(400, "No valid documents found or files could not be read");
         }
 
-        const resend = new Resend(process.env.RESEND_API_KEY);
+        // Initialize SendGrid
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+        
         const contextInfo = context ? `\n\n${context}` : '';
         
         const htmlContent = `
@@ -120,28 +127,36 @@ Disha Sawant
 🔗 https://dishasawantt.github.io/resume
 💼 https://linkedin.com/in/disha-sawant-7877b21b6`;
 
-        log('📤 Sending email via Resend to:', recipientEmail);
+        log('📤 Sending email via SendGrid to:', recipientEmail);
 
-        const result = await resend.emails.send({
-            from: 'Disha Sawant <onboarding@resend.dev>',
-            to: [recipientEmail],
+        const msg = {
+            to: recipientEmail,
+            from: {
+                email: 'dishasawantt@gmail.com',
+                name: 'Disha Sawant'
+            },
             subject: `Disha Sawant - ${documentList.join(' & ')}`,
-            html: htmlContent,
             text: textContent,
-            attachments
-        });
+            html: htmlContent,
+            attachments: attachments
+        };
 
-        log('✅ Resend Response:', result.id || result.data?.id);
+        const result = await sgMail.send(msg);
+        
+        log('✅ SendGrid Response:', result[0]?.statusCode);
 
         return successResponse({ 
             success: true, 
-            messageId: result.id || result.data?.id,
+            messageId: result[0]?.headers?.['x-message-id'],
             message: `Documents sent successfully to ${recipientEmail}`,
             documentsSent: documentList
         });
 
     } catch (error) {
         logError("Document sending error:", error.message);
+        if (error.response) {
+            logError("SendGrid error details:", error.response.body);
+        }
         return errorResponse(500, "Failed to send documents", error.message);
     }
 };
