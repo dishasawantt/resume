@@ -132,17 +132,17 @@ const TOOLS = [
         type: "function",
         function: {
             name: "send_documents",
-            description: "Send Disha's resume or other documents to the visitor via email. Use when visitor requests resume, CV, or portfolio materials to be sent to them.",
+            description: "Send Disha's resume or other documents to the visitor via email. IMPORTANT: You MUST have the visitor's full name AND email address before calling this function. If you don't have both, ask for them first. Do NOT call this function until you have collected: 1) recipientName, 2) recipientEmail, 3) documents array.",
             parameters: {
                 type: "object",
                 properties: {
                     recipientName: {
                         type: "string",
-                        description: "Name of the person requesting documents"
+                        description: "REQUIRED: Full name of the person requesting documents. Must be collected before calling this function."
                     },
                     recipientEmail: {
                         type: "string",
-                        description: "Email address to send documents to"
+                        description: "REQUIRED: Valid email address to send documents to. Must be collected before calling this function."
                     },
                     documents: {
                         type: "array",
@@ -150,7 +150,7 @@ const TOOLS = [
                             type: "string",
                             enum: ["resume"]
                         },
-                        description: "Array of documents to send. Currently supports: 'resume'"
+                        description: "Array of documents to send. Default to ['resume'] when user requests resume or CV."
                     },
                     context: {
                         type: "string",
@@ -347,27 +347,33 @@ Connected with professionals at: Ema, AWS, Qualcomm, Salesforce, Bosch, SDSU, an
 You have access to three tools to help visitors:
 
 1. send_contact_email: When visitor wants to contact you or send you a message
-   - First ask for their name and email naturally
-   - Then use tool to send their message to your inbox
-   - Example: "I'd love to hear more! What's your name and email so I can get back to you?"
+   - REQUIRED: name, email, and message
+   - Ask for ALL required info: "I'd love to hear more! What's your name and email so I can get back to you?"
+   - Don't call tool until you have ALL fields
+   - If user only gives email, ask: "And what's your name?"
 
 2. send_documents: When visitor requests resume or documents
-   - Ask for their email if not already provided
-   - Use tool to send documents to them
-   - Example: "I'd be happy to send you my resume! What email should I send it to?"
+   - REQUIRED: name AND email (both mandatory!)
+   - Ask for BOTH: "I'd be happy to send you my resume! What's your name and email?"
+   - If user only gives email, ask: "Thanks! And what's your name?"
+   - If user only gives name, ask: "Great! And what email should I send it to?"
+   - Don't call tool until you have BOTH name and email
+   - documents parameter should be ["resume"]
 
 3. schedule_meeting: When visitor wants to schedule a call/meeting
+   - No info needed from user
    - Determine meeting type based on context:
      * quick_chat (15min): Quick questions, brief intro
      * consultation (30min): Portfolio review, project discussion
      * interview (45min): Job interviews, detailed discussions
    - Generate scheduling link immediately
    
-IMPORTANT:
-- Always collect name and email before using tools
-- Be natural and conversational when asking for information
-- After tool execution, confirm what was done
-- Never apologize excessively - be helpful and confident`;
+CRITICAL RULES:
+- NEVER call send_contact_email or send_documents without ALL required fields
+- If missing info, ask follow-up questions naturally
+- Extract name and email from conversation context
+- Be conversational but thorough in collecting information
+- After tool execution, confirm what was done`;
 
     const headers = {
         "Access-Control-Allow-Origin": "*",
@@ -517,9 +523,12 @@ async function executeToolCall(toolData) {
                     response: `Done! I've sent my ${docs} to ${args.recipientEmail}. You should receive it within a minute. Check your spam folder if you don't see it. Feel free to reach out if you have any questions!` 
                 };
             } else {
+                console.error('Send document error:', result);
                 return { 
                     success: false, 
-                    response: `I had trouble sending the documents. You can download my resume directly from the main page, or try again later.` 
+                    response: result.error && result.error.includes('Missing required fields')
+                        ? `I need a bit more information. What's your name and email address?`
+                        : `I had trouble sending the documents. You can download my resume directly from the main page, or try again later.` 
                 };
             }
         } else if (functionName === 'schedule_meeting') {
