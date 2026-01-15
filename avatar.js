@@ -34,6 +34,7 @@ let isListening = false;
 let waveformAnimationId = null;
 let lastAiResponse = '';
 let hasPlayedGoodbye = false;
+let pendingToolCall = null;
 
 const quickActions = {
     resume: { text: "Download Resume", href: "Disha Sawant Resume 2025.pdf", icon: "fa-download" },
@@ -332,15 +333,43 @@ async function handleSend() {
         const response = await fetch('/.netlify/functions/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, history: conversationHistory.slice(-10) })
+            body: JSON.stringify({ 
+                message, 
+                history: conversationHistory.slice(-10),
+                toolExecutionData: pendingToolCall
+            })
         });
+        
         if (!response.ok) throw new Error('Request failed');
         const data = await response.json();
-        const botResponse = data.response || "I apologize, but I could not process that request.";
-        conversationHistory.push({ role: 'assistant', content: botResponse });
-        setThinkingState(false);
-        displayResponse(botResponse, getContextualActions(message, botResponse));
-        lastAiResponse = botResponse;
+
+        if (pendingToolCall) {
+            pendingToolCall = null;
+            setThinkingState(false);
+            
+            if (data.schedulingUrl) {
+                displayResponse(data.response, []);
+                addSchedulingCard(data.schedulingUrl, data.eventName, data.duration);
+            } else {
+                displayResponse(data.response, []);
+            }
+            
+            lastAiResponse = data.response;
+            conversationHistory.push({ role: 'assistant', content: data.response });
+        } else if (data.toolCall && data.toolCall.requiresApproval) {
+            pendingToolCall = data.toolCall;
+            setThinkingState(false);
+            displayResponse(data.response, []);
+            lastAiResponse = data.response;
+            conversationHistory.push({ role: 'assistant', content: data.response });
+            addApprovalButtons(data.toolCall);
+        } else {
+            const botResponse = data.response || "I apologize, but I could not process that request.";
+            conversationHistory.push({ role: 'assistant', content: botResponse });
+            setThinkingState(false);
+            displayResponse(botResponse, getContextualActions(message, botResponse));
+            lastAiResponse = botResponse;
+        }
     } catch (error) {
         console.error('Error:', error);
         setThinkingState(false);
@@ -436,3 +465,94 @@ function typeText(text, onComplete = null) {
 }
 
 function preloadVideos() { [videoGreeting, videoIdle, videoGoodbye].forEach(v => { v.muted = true; v.volume = 0; v.load(); }); }
+
+function addApprovalButtons(toolCall) {
+    document.querySelector('.tool-approval-buttons')?.remove();
+    
+    const approvalDiv = document.createElement('div');
+    approvalDiv.className = 'tool-approval-buttons';
+    
+    const approveBtn = document.createElement('button');
+    approveBtn.className = 'btn btn-approve';
+    
+    if (toolCall.function === 'send_contact_email') {
+        approveBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Message';
+    } else if (toolCall.function === 'send_documents') {
+        approveBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Send Documents';
+    } else if (toolCall.function === 'schedule_meeting') {
+        approveBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Get Link';
+    } else {
+        approveBtn.innerHTML = '<i class="fas fa-check"></i> Proceed';
+    }
+    
+    approveBtn.onclick = async () => {
+        approvalDiv.remove();
+        setThinkingState(true);
+        await handleSend();
+    };
+    
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn btn-cancel';
+    cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
+    cancelBtn.onclick = () => {
+        pendingToolCall = null;
+        approvalDiv.remove();
+        const cancelMsg = "No problem! Let me know if you need anything else.";
+        addToChatHistory(cancelMsg, false);
+        lastAiResponse = cancelMsg;
+        conversationHistory.push({ role: 'assistant', content: cancelMsg });
+    };
+    
+    approvalDiv.appendChild(approveBtn);
+    approvalDiv.appendChild(cancelBtn);
+    
+    const chatSection = document.querySelector('.chat-section');
+    const inputArea = document.querySelector('.input-area');
+    chatSection.insertBefore(approvalDiv, inputArea);
+}
+
+function addSchedulingCard(url, eventName, duration) {
+    document.querySelector('.scheduling-card')?.remove();
+    
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'scheduling-card';
+    
+    const durationText = duration ? `${duration} minutes` : '';
+    
+    cardDiv.innerHTML = `
+        <div class="scheduling-card-header">
+            <i class="fas fa-calendar-alt"></i>
+            <h3>${eventName || 'Schedule a Meeting'}</h3>
+        </div>
+        ${durationText ? `<p class="scheduling-duration">${durationText}</p>` : ''}
+        <a href="${url}" target="_blank" rel="noopener noreferrer" class="scheduling-link-btn">
+            <i class="fas fa-external-link-alt"></i> Open Calendar
+        </a>
+        <button class="copy-link-btn" onclick="copySchedulingLink('${url}')">
+            <i class="fas fa-copy"></i> Copy Link
+        </button>
+    `;
+    
+    const chatSection = document.querySelector('.chat-section');
+    const inputArea = document.querySelector('.input-area');
+    chatSection.insertBefore(cardDiv, inputArea);
+    
+    setTimeout(() => cardDiv.classList.add('visible'), 100);
+}
+
+function copySchedulingLink(url) {
+    navigator.clipboard.writeText(url).then(() => {
+        const btn = document.querySelector('.copy-link-btn');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.style.background = '';
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+    });
+}
+
+window.copySchedulingLink = copySchedulingLink;

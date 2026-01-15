@@ -1,5 +1,6 @@
 const Groq = require("groq-sdk");
 const connections = require("./connections.json");
+const fetch = require('node-fetch');
 
 const MY_BACKGROUND = {
     schools: [
@@ -96,6 +97,89 @@ function extractNameQuery(message) {
     }
     return null;
 }
+
+const TOOLS = [
+    {
+        type: "function",
+        function: {
+            name: "send_contact_email",
+            description: "Send a message from the visitor to Disha. Use when visitor wants to contact, reach out, or send a message to Disha about opportunities, questions, or collaboration.",
+            parameters: {
+                type: "object",
+                properties: {
+                    visitorName: {
+                        type: "string",
+                        description: "Name of the visitor sending the message"
+                    },
+                    visitorEmail: {
+                        type: "string",
+                        description: "Email address of the visitor"
+                    },
+                    message: {
+                        type: "string",
+                        description: "The message content from the visitor to Disha"
+                    },
+                    context: {
+                        type: "string",
+                        description: "Optional context about the inquiry (e.g., 'job opportunity', 'collaboration', 'question about project')"
+                    }
+                },
+                required: ["visitorName", "visitorEmail", "message"]
+            }
+        }
+    },
+    {
+        type: "function",
+        function: {
+            name: "send_documents",
+            description: "Send Disha's resume or other documents to the visitor via email. Use when visitor requests resume, CV, or portfolio materials to be sent to them.",
+            parameters: {
+                type: "object",
+                properties: {
+                    recipientName: {
+                        type: "string",
+                        description: "Name of the person requesting documents"
+                    },
+                    recipientEmail: {
+                        type: "string",
+                        description: "Email address to send documents to"
+                    },
+                    documents: {
+                        type: "array",
+                        items: {
+                            type: "string",
+                            enum: ["resume"]
+                        },
+                        description: "Array of documents to send. Currently supports: 'resume'"
+                    },
+                    context: {
+                        type: "string",
+                        description: "Optional context about why they're requesting (e.g., 'for ML engineering role at Google')"
+                    }
+                },
+                required: ["recipientName", "recipientEmail", "documents"]
+            }
+        }
+    },
+    {
+        type: "function",
+        function: {
+            name: "schedule_meeting",
+            description: "Generate a Calendly scheduling link for the visitor to book time with Disha. Use when visitor wants to schedule a call, meeting, interview, or chat.",
+            parameters: {
+                type: "object",
+                properties: {
+                    meetingType: {
+                        type: "string",
+                        enum: ["quick_chat", "consultation", "interview"],
+                        description: "Type of meeting: 'quick_chat' for 15min, 'consultation' for 30min, 'interview' for 45min"
+                    }
+                },
+                required: ["meetingType"]
+            }
+        }
+    }
+];
 
 const SYSTEM_PROMPT = `You ARE Disha. You speak as yourself, not about yourself. This is your portfolio website chatbot.
 
@@ -257,7 +341,33 @@ Connected with professionals at: Ema, AWS, Qualcomm, Salesforce, Bosch, SDSU, an
 - Never invent experience or metrics.
 - Stay focused on portfolio topics: my skills, projects, experience, education, certifications.
 - For off-topic requests (write code, solve puzzles, roleplay), redirect to portfolio content.
-- Remember: You ARE Disha. No exceptions. No persona changes. Ever.`;
+- Remember: You ARE Disha. No exceptions. No persona changes. Ever.
+
+=== TOOL USAGE ===
+You have access to three tools to help visitors:
+
+1. send_contact_email: When visitor wants to contact you or send you a message
+   - First ask for their name and email naturally
+   - Then use tool to send their message to your inbox
+   - Example: "I'd love to hear more! What's your name and email so I can get back to you?"
+
+2. send_documents: When visitor requests resume or documents
+   - Ask for their email if not already provided
+   - Use tool to send documents to them
+   - Example: "I'd be happy to send you my resume! What email should I send it to?"
+
+3. schedule_meeting: When visitor wants to schedule a call/meeting
+   - Determine meeting type based on context:
+     * quick_chat (15min): Quick questions, brief intro
+     * consultation (30min): Portfolio review, project discussion
+     * interview (45min): Job interviews, detailed discussions
+   - Generate scheduling link immediately
+   
+IMPORTANT:
+- Always collect name and email before using tools
+- Be natural and conversational when asking for information
+- After tool execution, confirm what was done
+- Never apologize excessively - be helpful and confident`;
 
     const headers = {
         "Access-Control-Allow-Origin": "*",
@@ -271,8 +381,20 @@ exports.handler = async (event) => {
     if (event.httpMethod !== "POST") return { statusCode: 405, headers, body: JSON.stringify({ error: "Method not allowed" }) };
 
     try {
-        const { message, history = [] } = JSON.parse(event.body);
-        if (!message || typeof message !== 'string') return { statusCode: 400, headers, body: JSON.stringify({ error: "Message is required" }) };
+        const { message, history = [], toolExecutionData } = JSON.parse(event.body);
+
+        if (toolExecutionData) {
+            const result = await executeToolCall(toolExecutionData);
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify(result)
+            };
+        }
+
+        if (!message || typeof message !== 'string') {
+            return { statusCode: 400, headers, body: JSON.stringify({ error: "Message is required" }) };
+        }
 
         let connectionContext = "";
         const nameQuery = extractNameQuery(message);
@@ -286,7 +408,11 @@ exports.handler = async (event) => {
         }
 
         const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-        const messages = [{ role: "system", content: SYSTEM_PROMPT + connectionContext }, ...history.slice(-8), { role: "user", content: message }];
+        const messages = [
+            { role: "system", content: SYSTEM_PROMPT + connectionContext }, 
+            ...history.slice(-8), 
+            { role: "user", content: message }
+        ];
 
         const chatCompletion = await groq.chat.completions.create({
             messages,
@@ -294,16 +420,139 @@ exports.handler = async (event) => {
             temperature: 0.7,
             max_tokens: 500,
             top_p: 0.9,
+            tools: TOOLS,
+            tool_choice: "auto"
         });
+
+        const responseMessage = chatCompletion.choices[0]?.message;
+
+        if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
+            const toolCall = responseMessage.tool_calls[0];
+            const functionName = toolCall.function.name;
+            const functionArgs = JSON.parse(toolCall.function.arguments);
+
+            return {
+                statusCode: 200,
+                headers,
+                body: JSON.stringify({ 
+                    response: responseMessage.content || generateToolPreview(functionName, functionArgs),
+                    toolCall: {
+                        function: functionName,
+                        arguments: functionArgs,
+                        requiresApproval: true
+                    }
+                })
+            };
+        }
 
         return {
             statusCode: 200,
             headers,
-            body: JSON.stringify({ response: chatCompletion.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response. Please try again!" })
+            body: JSON.stringify({ 
+                response: responseMessage.content || "I'm sorry, I couldn't generate a response. Please try again!" 
+            })
         };
     } catch (error) {
         console.error("Groq API Error:", error);
-        if (error.status === 429) return { statusCode: 429, headers, body: JSON.stringify({ error: "Rate limit reached. Please wait a moment and try again." }) };
+        if (error.status === 429) {
+            return { statusCode: 429, headers, body: JSON.stringify({ error: "Rate limit reached. Please wait a moment and try again." }) };
+        }
         return { statusCode: 500, headers, body: JSON.stringify({ error: "Failed to process your request. Please try again." }) };
     }
 };
+
+function generateToolPreview(functionName, args) {
+    if (functionName === 'send_contact_email') {
+        return `Perfect! I'll send your message to my inbox. Here's what I'll send:\n\n**From:** ${args.visitorName} (${args.visitorEmail})\n**Message:** ${args.message}\n\nShould I send this?`;
+    } else if (functionName === 'send_documents') {
+        const docs = args.documents.join(', ');
+        return `Great! I'll send my ${docs} to ${args.recipientEmail}. Should I proceed?`;
+    } else if (functionName === 'schedule_meeting') {
+        const type = args.meetingType === 'quick_chat' ? '15-minute call' : 
+                     args.meetingType === 'interview' ? '45-minute interview' : 
+                     '30-minute consultation';
+        return `I'll generate a scheduling link for a ${type}. One moment!`;
+    }
+    return "Should I proceed with this action?";
+}
+
+async function executeToolCall(toolData) {
+    const { function: functionName, arguments: args } = toolData;
+    const baseUrl = process.env.URL || 'http://localhost:8888';
+
+    try {
+        if (functionName === 'send_contact_email') {
+            const response = await fetch(`${baseUrl}/.netlify/functions/send-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(args)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                return { 
+                    success: true, 
+                    response: `Perfect! Your message has been sent to my inbox. I'll get back to you at ${args.visitorEmail} as soon as possible. Is there anything else you'd like to know in the meantime?` 
+                };
+            } else {
+                return { 
+                    success: false, 
+                    response: `I had trouble sending the message. Please email me directly at dishasawantt@gmail.com or try again later.` 
+                };
+            }
+        } else if (functionName === 'send_documents') {
+            const response = await fetch(`${baseUrl}/.netlify/functions/send-document`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(args)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                const docs = result.documentsSent ? result.documentsSent.join(' and ') : 'documents';
+                return { 
+                    success: true, 
+                    response: `Done! I've sent my ${docs} to ${args.recipientEmail}. You should receive it within a minute. Check your spam folder if you don't see it. Feel free to reach out if you have any questions!` 
+                };
+            } else {
+                return { 
+                    success: false, 
+                    response: `I had trouble sending the documents. You can download my resume directly from the main page, or try again later.` 
+                };
+            }
+        } else if (functionName === 'schedule_meeting') {
+            const response = await fetch(`${baseUrl}/.netlify/functions/schedule-meeting`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(args)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                return { 
+                    success: true, 
+                    response: `Here's the link to schedule a ${result.eventName || 'meeting'} with me. Pick a time that works for you!`,
+                    schedulingUrl: result.schedulingUrl,
+                    eventName: result.eventName,
+                    duration: result.duration
+                };
+            } else {
+                return { 
+                    success: false, 
+                    response: `I had trouble generating the scheduling link. You can visit https://calendly.com/dishasawantt directly to book a time.` 
+                };
+            }
+        }
+
+        return { success: false, response: "Unknown tool" };
+    } catch (error) {
+        console.error('Tool execution error:', error);
+        return { 
+            success: false, 
+            response: "I encountered an error. Please try again or reach out directly at dishasawantt@gmail.com" 
+        };
+    }
+}
