@@ -9,26 +9,38 @@ const headers = {
 
 const rateLimitMap = new Map();
 
-const checkRateLimit = (id, max = 3, window = 3600000) => {
+function checkRateLimit(identifier, maxRequests = 3, windowMs = 3600000) {
     const now = Date.now();
-    const recent = (rateLimitMap.get(id) || []).filter(t => now - t < window);
-    if (recent.length >= max) return { allowed: false, retryAfter: Math.ceil((window - (now - recent[0])) / 60000) };
-    recent.push(now);
-    rateLimitMap.set(id, recent);
+    const recentRequests = (rateLimitMap.get(identifier) || []).filter(time => now - time < windowMs);
+    
+    if (recentRequests.length >= maxRequests) {
+        return { allowed: false, retryAfter: Math.ceil((windowMs - (now - recentRequests[0])) / 60000) };
+    }
+    
+    recentRequests.push(now);
+    rateLimitMap.set(identifier, recentRequests);
     return { allowed: true };
-};
+}
 
-const isValidEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-const log = (...args) => DEBUG && console.log(...args);
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const isValidEmail = email => EMAIL_REGEX.test(email);
+
+const log = (...args) => { if (DEBUG) console.log(...args); };
 const logError = (...args) => console.error(...args);
-const errorResponse = (code, error, details = null) => ({ statusCode: code, headers, body: JSON.stringify(details ? { error, details } : { error }) });
+
+const errorResponse = (statusCode, error, details = null) => ({
+    statusCode,
+    headers,
+    body: JSON.stringify(details ? { error, details } : { error })
+});
+
 const successResponse = data => ({ statusCode: 200, headers, body: JSON.stringify(data) });
 const handleOptions = () => ({ statusCode: 200, headers, body: "" });
 
-const checkMethod = (method, allowed = ['POST']) => {
+function checkMethod(method, allowed = ['POST']) {
     if (method === 'OPTIONS') return handleOptions();
     if (!allowed.includes(method)) return errorResponse(405, 'Method not allowed');
     return null;
-};
+}
 
-module.exports = { headers, checkRateLimit, isValidEmail, log, logError, errorResponse, successResponse, handleOptions, checkMethod };
+module.exports = { headers, checkRateLimit, isValidEmail, log, logError, errorResponse, successResponse, handleOptions, checkMethod, EMAIL_REGEX };
