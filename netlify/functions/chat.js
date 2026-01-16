@@ -106,11 +106,22 @@ const PLACEHOLDER = /user'?s?|visitor|unknown|example\.com|test@|your_|\[.*\]|<.
 const validateToolParams = (fn, args) => {
     if (fn !== 'send_documents') return { valid: true };
     const { recipientName: name, recipientEmail: email } = args;
-    if (!name || name.length < 2) return { valid: false, message: "I'd love to send my resume! What's your name?" };
-    if (!email) return { valid: false, message: `Thanks ${name}! What's your email?` };
-    if (!isValidEmail(email)) return { valid: false, message: "That doesn't look valid. Could you check your email?" };
-    if (PLACEHOLDER.test(name) || PLACEHOLDER.test(email)) return { valid: false, message: "I need your actual name and email. What's your name?" };
-    if (name.includes('@')) return { valid: false, message: "That looks like an email. What's your name?" };
+    
+    const hasPlaceholder = str => !str || PLACEHOLDER.test(str);
+    const nameIsEmail = name?.includes('@');
+    
+    if (hasPlaceholder(name) && hasPlaceholder(email)) {
+        return { valid: false, message: "Sure, I can send you my resume! What's your name and email?" };
+    }
+    if (!name || name.length < 2 || hasPlaceholder(name) || nameIsEmail) {
+        return { valid: false, message: "What's your name?" };
+    }
+    if (!email || hasPlaceholder(email)) {
+        return { valid: false, message: `Got it, ${name}! What's your email address?` };
+    }
+    if (!isValidEmail(email)) {
+        return { valid: false, message: `Hmm, "${email}" doesn't look right. Can you double-check that email?` };
+    }
     return { valid: true };
 };
 
