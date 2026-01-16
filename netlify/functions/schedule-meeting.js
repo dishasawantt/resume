@@ -1,20 +1,14 @@
 const fetch = require('node-fetch');
-const { 
-    log, 
-    logError, 
-    errorResponse, 
-    successResponse, 
-    checkMethod 
-} = require('./utils');
+const { log, logError, errorResponse, successResponse, checkMethod } = require('./utils');
 
-const CALENDLY_URLS = {
+const URLS = {
     general: "https://calendly.com/dishasawantt",
     quick_chat: "https://calendly.com/dishasawantt/15-minute-meeting",
     consultation: "https://calendly.com/dishasawantt/30min",
     interview: "https://calendly.com/dishasawantt/45-minute-meeting"
 };
 
-const MEETING_TYPES = {
+const TYPES = {
     quick_chat: { name: '15-Minute Call', duration: 15 },
     consultation: { name: '30-Minute Consultation', duration: 30 },
     interview: { name: '45-Minute Interview', duration: 45 }
@@ -26,100 +20,35 @@ exports.handler = async (event) => {
 
     try {
         const { meetingType = 'consultation' } = JSON.parse(event.body);
-        const typeInfo = MEETING_TYPES[meetingType] || MEETING_TYPES.consultation;
+        const type = TYPES[meetingType] || TYPES.consultation;
 
-        // Use fallback if no API credentials
-        if (!process.env.CALENDLY_API_TOKEN || !process.env.CALENDLY_USER) {
-            log('Using Calendly fallback URLs');
+        if (!process.env.CALENDLY_API_TOKEN) {
             return successResponse({
                 success: true,
-                schedulingUrl: CALENDLY_URLS[meetingType] || CALENDLY_URLS.general,
-                eventName: typeInfo.name,
-                duration: typeInfo.duration,
-                message: "Here's the link to schedule a meeting with Disha",
+                schedulingUrl: URLS[meetingType] || URLS.general,
+                eventName: type.name,
+                duration: type.duration,
                 fallback: true
             });
         }
 
-        // Try Calendly API
         try {
-            const userResponse = await fetch('https://api.calendly.com/users/me', {
-                headers: {
-                    'Authorization': `Bearer ${process.env.CALENDLY_API_TOKEN}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+            const headers = { 'Authorization': `Bearer ${process.env.CALENDLY_API_TOKEN}`, 'Content-Type': 'application/json' };
+            const user = await (await fetch('https://api.calendly.com/users/me', { headers })).json();
+            const events = await (await fetch(`https://api.calendly.com/event_types?user=${user.resource.uri}`, { headers })).json();
+            
+            const terms = { interview: ['interview', '45'], quick_chat: ['15', 'quick'], consultation: ['30', 'consultation'] }[meetingType] || ['30'];
+            const event = events.collection.find(e => terms.some(t => e.name.toLowerCase().includes(t)) || e.duration === type.duration) || events.collection[0];
 
-            if (!userResponse.ok) throw new Error('Failed to fetch Calendly user');
-
-            const userData = await userResponse.json();
-            const userUri = userData.resource.uri;
-
-            const eventTypesResponse = await fetch(
-                `https://api.calendly.com/event_types?user=${userUri}`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${process.env.CALENDLY_API_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
-
-            if (!eventTypesResponse.ok) throw new Error('Failed to fetch event types');
-
-            const { collection: eventTypes } = await eventTypesResponse.json();
-
-            // Find matching event type
-            const selectedEventType = findEventType(eventTypes, meetingType) || eventTypes[0];
-
-            if (!selectedEventType) {
-                return successResponse({
-                    success: true,
-                    schedulingUrl: CALENDLY_URLS[meetingType] || CALENDLY_URLS.general,
-                    eventName: typeInfo.name,
-                    fallback: true
-                });
+            if (event) {
+                log('Found:', event.name);
+                return successResponse({ success: true, schedulingUrl: event.scheduling_url, eventName: event.name, duration: event.duration });
             }
+        } catch (e) { logError("Calendly API:", e.message); }
 
-            log('Found Calendly event:', selectedEventType.name);
-
-            return successResponse({
-                success: true,
-                schedulingUrl: selectedEventType.scheduling_url,
-                eventName: selectedEventType.name,
-                duration: selectedEventType.duration,
-                message: `Here's the link to schedule a ${selectedEventType.name} with Disha`
-            });
-
-        } catch (apiError) {
-            logError("Calendly API error:", apiError.message);
-            return successResponse({
-                success: true,
-                schedulingUrl: CALENDLY_URLS[meetingType] || CALENDLY_URLS.general,
-                eventName: typeInfo.name,
-                duration: typeInfo.duration,
-                fallback: true
-            });
-        }
-
-    } catch (error) {
-        logError("Meeting scheduling error:", error.message);
-        return errorResponse(500, "Failed to generate scheduling link", error.message);
+        return successResponse({ success: true, schedulingUrl: URLS[meetingType] || URLS.general, eventName: type.name, duration: type.duration, fallback: true });
+    } catch (e) {
+        logError("Schedule error:", e.message);
+        return errorResponse(500, "Failed to generate link", e.message);
     }
 };
-
-function findEventType(eventTypes, meetingType) {
-    const searchTerms = {
-        interview: ['interview', '45'],
-        quick_chat: ['15', 'quick'],
-        consultation: ['30', 'consultation']
-    };
-
-    const terms = searchTerms[meetingType] || searchTerms.consultation;
-    const targetDuration = MEETING_TYPES[meetingType]?.duration;
-
-    return eventTypes.find(et => 
-        terms.some(term => et.name.toLowerCase().includes(term)) || 
-        et.duration === targetDuration
-    );
-}

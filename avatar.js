@@ -1,46 +1,25 @@
 // DOM Elements
+const $ = id => document.getElementById(id);
 const elements = {
-    videoGreeting: document.getElementById('video-greeting'),
-    videoIdle: document.getElementById('video-idle'),
-    videoGoodbye: document.getElementById('video-goodbye'),
-    responseArea: document.getElementById('response-area'),
-    responseText: document.getElementById('response-text'),
-    userInput: document.getElementById('user-input'),
-    sendBtn: document.getElementById('send-btn'),
-    voiceToggle: document.getElementById('voice-toggle'),
-    micBtn: document.getElementById('mic-btn'),
-    waveformCanvas: document.getElementById('waveform'),
-    suggestions: document.getElementById('suggestions'),
-    avatarName: document.getElementById('avatar-name'),
-    themeToggle: document.getElementById('theme-toggle'),
-    avatarContent: document.querySelector('.avatar-content'),
-    chatHistory: document.getElementById('chat-history'),
-    voiceSelector: document.getElementById('voice-selector'),
-    voiceSelectorToggle: document.getElementById('voice-selector-toggle'),
-    voiceDropdownClose: document.getElementById('voice-dropdown-close'),
-    voiceSelect: document.getElementById('voice-select'),
-    voicePreviewBtn: document.getElementById('voice-preview-btn')
+    videoGreeting: $('video-greeting'), videoIdle: $('video-idle'), videoGoodbye: $('video-goodbye'),
+    responseArea: $('response-area'), responseText: $('response-text'), userInput: $('user-input'),
+    sendBtn: $('send-btn'), voiceToggle: $('voice-toggle'), micBtn: $('mic-btn'),
+    waveformCanvas: $('waveform'), suggestions: $('suggestions'), avatarName: $('avatar-name'),
+    themeToggle: $('theme-toggle'), chatHistory: $('chat-history'), voiceSelector: $('voice-selector'),
+    voiceSelectorToggle: $('voice-selector-toggle'), voiceDropdownClose: $('voice-dropdown-close'),
+    voiceSelect: $('voice-select'), voicePreviewBtn: $('voice-preview-btn'),
+    avatarContent: document.querySelector('.avatar-content')
 };
 
 // State
 const state = {
-    currentVideo: null,
-    isProcessing: false,
-    voiceEnabled: true,
-    conversationHistory: [],
-    preferredVoice: null,
-    allVoices: [],
-    isHorizontalLayout: false,
-    messageCount: 0,
-    recognition: null,
-    isListening: false,
-    waveformAnimationId: null,
-    lastAiResponse: '',
-    hasPlayedGoodbye: false,
-    pendingToolCall: null
+    currentVideo: null, isProcessing: false, voiceEnabled: true, conversationHistory: [],
+    preferredVoice: null, allVoices: [], isHorizontalLayout: false, messageCount: 0,
+    recognition: null, isListening: false, waveformAnimationId: null, lastAiResponse: '',
+    hasPlayedGoodbye: false, pendingToolCall: null
 };
 
-// Configuration
+// Config
 const quickActions = {
     resume: { text: "Download Resume", href: "Disha Sawant Resume 2025.pdf", icon: "fa-download" },
     github: { text: "View GitHub", href: "https://github.com/dishasawantt", icon: "fa-github" },
@@ -52,656 +31,346 @@ const quickActions = {
 const easterEggs = {
     triggers: ['konami', 'secret', 'easter egg', 'hidden', 'surprise me'],
     responses: [
-        "You found a secret! Fun fact: I once debugged code for 6 hours only to find a missing semicolon.",
-        "Easter egg unlocked! Did you know I've completed 72 LinkedIn Learning courses?",
-        "Secret discovered! This entire avatar experience was built with vanilla JavaScript.",
-        "Hidden message found! When I'm not coding, you'll find me painting watercolors or singing bhajans."
+        "You found a secret! I once debugged for 6 hours to find a missing semicolon.",
+        "Easter egg! I've completed 72 LinkedIn Learning courses.",
+        "Secret! This avatar was built with vanilla JavaScript.",
+        "Hidden! When not coding, I paint watercolors or sing bhajans."
     ]
 };
 
 const suggestionSets = [
-    [{ text: "About Me", query: "Tell me about yourself" }, { text: "Ema AI Work", query: "Tell me about your AI work at Ema" }, { text: "22 Certifications", query: "What certifications do you have?" }, { text: "72 Courses", query: "Tell me about your continuous learning" }],
-    [{ text: "Experience", query: "What is your work experience?" }, { text: "Healthcare AI", query: "Tell me about your Brain Tumor AI project" }, { text: "Deep Learning", query: "Tell me about your Deep Learning specialization" }, { text: "Key Metrics", query: "What metrics have you achieved?" }],
-    [{ text: "Skills", query: "What are your technical skills?" }, { text: "Projects", query: "What projects have you worked on?" }, { text: "Hobbies", query: "What are your hobbies?" }, { text: "Contact", query: "How can I contact you?" }],
-    [{ text: "Education", query: "What is your educational background?" }, { text: "Big Data", query: "Tell me about your Big Data certifications" }, { text: "Best Project", query: "What's your most impactful project?" }, { text: "Why AI?", query: "Why are you passionate about AI?" }]
+    [{ text: "About Me", query: "Tell me about yourself" }, { text: "Ema AI Work", query: "Tell me about your AI work at Ema" }, { text: "22 Certifications", query: "What certifications do you have?" }, { text: "Key Metrics", query: "What metrics have you achieved?" }],
+    [{ text: "Experience", query: "What is your work experience?" }, { text: "Healthcare AI", query: "Tell me about Brain Tumor AI" }, { text: "Skills", query: "What are your technical skills?" }, { text: "Projects", query: "What projects have you worked on?" }]
 ];
 
-// Initialize
+// Init
 document.addEventListener('DOMContentLoaded', () => {
-    loadPreferredVoice();
-    setupVoiceInput();
-    setupVoiceSelector();
-    setupThemeToggle();
-    setupRotatingSuggestions();
-    playGreeting();
-    setupEventListeners();
-    handlePageLeave();
-    preloadVideos();
+    loadVoice(); setupVoiceInput(); setupVoiceSelector(); setupTheme(); setupSuggestions();
+    playGreeting(); setupEvents(); setupPageLeave(); preloadVideos();
 });
 
 // Theme
-function setupThemeToggle() {
-    const savedTheme = localStorage.getItem('avatarTheme') || 'dark';
-    if (savedTheme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+const setupTheme = () => {
+    const saved = localStorage.getItem('avatarTheme') || 'dark';
+    if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
     elements.themeToggle.addEventListener('click', () => {
         const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('avatarTheme', newTheme);
     });
-}
+};
 
 // Layout
-function switchToHorizontalLayout() {
-    if (state.isHorizontalLayout) return;
-    state.isHorizontalLayout = true;
-    elements.avatarContent.classList.add('horizontal');
-}
+const switchToHorizontal = () => { if (!state.isHorizontalLayout) { state.isHorizontalLayout = true; elements.avatarContent.classList.add('horizontal'); } };
 
 // Chat History
-function addToChatHistory(message, isUser = false) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `chat-message ${isUser ? 'user' : 'ai'}`;
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    contentDiv.innerHTML = message.replace(/\n/g, '<br>');
-    messageDiv.appendChild(contentDiv);
-    elements.chatHistory.appendChild(messageDiv);
+const addToHistory = (msg, isUser = false) => {
+    const div = document.createElement('div');
+    div.className = `chat-message ${isUser ? 'user' : 'ai'}`;
+    div.innerHTML = `<div class="message-content">${msg.replace(/\n/g, '<br>')}</div>`;
+    elements.chatHistory.appendChild(div);
     elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
-}
+};
 
 // Greeting
-function getGreetingMessage() {
-    const hour = new Date().getHours();
-    const timeGreeting = hour >= 5 && hour < 12 ? "Good morning" : hour >= 12 && hour < 17 ? "Good afternoon" : hour >= 17 && hour < 21 ? "Good evening" : "Hello";
-    return `${timeGreeting} and Namaste, I am Disha. Feel free to ask me anything about my background, projects, or experience.`;
-}
+const getGreeting = () => {
+    const h = new Date().getHours();
+    const time = h >= 5 && h < 12 ? "Good morning" : h >= 12 && h < 17 ? "Good afternoon" : h >= 17 && h < 21 ? "Good evening" : "Hello";
+    return `${time} and Namaste, I am Disha. Feel free to ask me anything about my background, projects, or experience.`;
+};
 
 // Suggestions
-function setupRotatingSuggestions() {
-    const randomSet = suggestionSets[Math.floor(Math.random() * suggestionSets.length)];
+const setupSuggestions = () => {
+    const set = suggestionSets[Math.floor(Math.random() * suggestionSets.length)];
     elements.suggestions.querySelectorAll('.suggestion-btn').forEach((btn, i) => {
-        if (randomSet[i]) {
-            btn.textContent = randomSet[i].text;
-            btn.setAttribute('data-query', randomSet[i].query);
-        }
+        if (set[i]) { btn.textContent = set[i].text; btn.setAttribute('data-query', set[i].query); }
     });
-}
+};
 
 // Voice
-function loadPreferredVoice() {
-    const loadVoices = () => {
+const loadVoice = () => {
+    const load = () => {
         state.allVoices = speechSynthesis.getVoices();
-        populateVoiceSelector(state.allVoices);
-        
-        const savedVoiceName = localStorage.getItem('preferredVoice');
-        if (savedVoiceName) {
-            const savedVoice = state.allVoices.find(v => v.name === savedVoiceName);
-            if (savedVoice) {
-                state.preferredVoice = savedVoice;
-                elements.voiceSelect.value = savedVoiceName;
-                return;
-            }
-        }
-        
-        const preferredNames = ['Samantha', 'Karen', 'Google US English Female', 'Microsoft Zira', 'Fiona'];
-        for (const name of preferredNames) {
-            const found = state.allVoices.find(v => v.name.includes(name));
-            if (found) {
-                state.preferredVoice = found;
-                elements.voiceSelect.value = found.name;
-                break;
-            }
-        }
-        
-        if (!state.preferredVoice) {
-            state.preferredVoice = state.allVoices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) 
-                || state.allVoices.find(v => v.lang.startsWith('en')) 
-                || state.allVoices[0];
-            if (state.preferredVoice) elements.voiceSelect.value = state.preferredVoice.name;
-        }
+        populateVoices(state.allVoices);
+        const saved = localStorage.getItem('preferredVoice');
+        if (saved) { const v = state.allVoices.find(x => x.name === saved); if (v) { state.preferredVoice = v; elements.voiceSelect.value = saved; return; } }
+        const preferred = ['Samantha', 'Karen', 'Google US English Female', 'Microsoft Zira'];
+        for (const name of preferred) { const v = state.allVoices.find(x => x.name.includes(name)); if (v) { state.preferredVoice = v; elements.voiceSelect.value = v.name; break; } }
+        if (!state.preferredVoice) state.preferredVoice = state.allVoices.find(v => v.lang.startsWith('en')) || state.allVoices[0];
     };
-    loadVoices();
-    speechSynthesis.onvoiceschanged = loadVoices;
-}
+    load(); speechSynthesis.onvoiceschanged = load;
+};
 
-function populateVoiceSelector(voices) {
+const populateVoices = voices => {
     elements.voiceSelect.innerHTML = '';
-    const englishVoices = voices.filter(v => v.lang.startsWith('en'));
-    const otherVoices = voices.filter(v => !v.lang.startsWith('en'));
-    
-    [{ voices: englishVoices, label: 'English Voices' }, { voices: otherVoices, label: 'Other Languages' }].forEach(({ voices: voiceList, label }) => {
-        if (voiceList.length) {
-            const group = document.createElement('optgroup');
-            group.label = label;
-            voiceList.forEach(v => {
-                const option = document.createElement('option');
-                option.value = v.name;
-                option.textContent = `${v.name} (${v.lang})`;
-                group.appendChild(option);
-            });
+    const en = voices.filter(v => v.lang.startsWith('en')), other = voices.filter(v => !v.lang.startsWith('en'));
+    [{ voices: en, label: 'English' }, { voices: other, label: 'Other' }].forEach(({ voices: list, label }) => {
+        if (list.length) {
+            const group = document.createElement('optgroup'); group.label = label;
+            list.forEach(v => { const opt = document.createElement('option'); opt.value = v.name; opt.textContent = `${v.name} (${v.lang})`; group.appendChild(opt); });
             elements.voiceSelect.appendChild(group);
         }
     });
-}
+};
 
-function setupVoiceSelector() {
+const setupVoiceSelector = () => {
     if (!elements.voiceSelectorToggle) return;
-    
     elements.voiceSelectorToggle.addEventListener('click', () => elements.voiceSelector.classList.toggle('open'));
     elements.voiceDropdownClose.addEventListener('click', () => elements.voiceSelector.classList.remove('open'));
-    document.addEventListener('click', (e) => {
-        if (!elements.voiceSelector.contains(e.target)) elements.voiceSelector.classList.remove('open');
-    });
-    
+    document.addEventListener('click', e => { if (!elements.voiceSelector.contains(e.target)) elements.voiceSelector.classList.remove('open'); });
     elements.voiceSelect.addEventListener('change', () => {
-        const selectedVoice = state.allVoices.find(v => v.name === elements.voiceSelect.value);
-        if (selectedVoice) {
-            state.preferredVoice = selectedVoice;
-            localStorage.setItem('preferredVoice', elements.voiceSelect.value);
-        }
+        const v = state.allVoices.find(x => x.name === elements.voiceSelect.value);
+        if (v) { state.preferredVoice = v; localStorage.setItem('preferredVoice', v.name); }
     });
-    
-    elements.voicePreviewBtn.addEventListener('click', () => speak("Hello, this is how I will sound when speaking."));
-}
+    elements.voicePreviewBtn.addEventListener('click', () => speak("Hello, this is how I will sound."));
+};
 
-function speak(text) {
+const speak = text => {
     if (!state.voiceEnabled || !text) return;
     speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.voice = state.preferredVoice;
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-    utterance.onstart = startWaveformAnimation;
-    utterance.onend = stopWaveformAnimation;
-    speechSynthesis.speak(utterance);
-}
+    const u = new SpeechSynthesisUtterance(text);
+    u.voice = state.preferredVoice; u.rate = 0.95; u.pitch = 1.0;
+    u.onstart = startWaveform; u.onend = stopWaveform;
+    speechSynthesis.speak(u);
+};
 
-function toggleVoice() {
+const toggleVoice = () => {
     state.voiceEnabled = !state.voiceEnabled;
     elements.voiceToggle.classList.toggle('muted', !state.voiceEnabled);
-    if (!state.voiceEnabled) {
-        speechSynthesis.cancel();
-        stopWaveformAnimation();
-    }
-}
+    if (!state.voiceEnabled) { speechSynthesis.cancel(); stopWaveform(); }
+};
 
 // Voice Input
-function setupVoiceInput() {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        if (elements.micBtn) elements.micBtn.style.display = 'none';
-        return;
-    }
-    
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    state.recognition = new SpeechRecognition();
-    state.recognition.continuous = false;
-    state.recognition.interimResults = true;
-    state.recognition.lang = 'en-US';
-    
-    state.recognition.onstart = () => {
-        state.isListening = true;
-        elements.micBtn?.classList.add('listening');
-        elements.userInput.placeholder = 'Listening...';
+const setupVoiceInput = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { elements.micBtn && (elements.micBtn.style.display = 'none'); return; }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    state.recognition = new SR(); state.recognition.continuous = false; state.recognition.interimResults = true; state.recognition.lang = 'en-US';
+    state.recognition.onstart = () => { state.isListening = true; elements.micBtn?.classList.add('listening'); elements.userInput.placeholder = 'Listening...'; };
+    state.recognition.onresult = e => {
+        let t = ''; for (let i = e.resultIndex; i < e.results.length; i++) t += e.results[i][0].transcript;
+        elements.userInput.value = t;
+        if (e.results[e.results.length - 1].isFinal) { stopListening(); handleSend(); }
     };
-    
-    state.recognition.onresult = (event) => {
-        let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            transcript += event.results[i][0].transcript;
-        }
-        elements.userInput.value = transcript;
-        if (event.results[event.results.length - 1].isFinal) {
-            stopListening();
-            handleSend();
-        }
-    };
-    
-    state.recognition.onerror = stopListening;
-    state.recognition.onend = stopListening;
-}
+    state.recognition.onerror = state.recognition.onend = stopListening;
+};
 
-function startListening() {
-    if (!state.recognition || state.isListening || state.isProcessing) return;
-    try { state.recognition.start(); } catch (e) { console.error('Could not start recognition:', e); }
-}
+const startListening = () => { if (state.recognition && !state.isListening && !state.isProcessing) try { state.recognition.start(); } catch {} };
+const stopListening = () => { state.isListening = false; elements.micBtn?.classList.remove('listening'); elements.userInput.placeholder = 'Ask me anything...'; try { state.recognition?.stop(); } catch {} };
 
-function stopListening() {
-    state.isListening = false;
-    elements.micBtn?.classList.remove('listening');
-    elements.userInput.placeholder = 'Ask me anything...';
-    try { state.recognition?.stop(); } catch (e) {}
-}
-
-// Waveform Animation
-function startWaveformAnimation() {
+// Waveform
+const startWaveform = () => {
     if (!elements.waveformCanvas) return;
-    const ctx = elements.waveformCanvas.getContext('2d');
-    const bufferLength = 64;
-    const dataArray = new Uint8Array(bufferLength);
-    
+    const ctx = elements.waveformCanvas.getContext('2d'), data = new Uint8Array(64);
     const draw = () => {
         state.waveformAnimationId = requestAnimationFrame(draw);
-        for (let i = 0; i < bufferLength; i++) dataArray[i] = Math.random() * 100 + 50;
-        
-        const { width, height } = elements.waveformCanvas;
-        ctx.clearRect(0, 0, width, height);
-        const barWidth = (width / bufferLength) * 2.5;
-        let x = 0;
-        
-        for (let i = 0; i < bufferLength; i++) {
-            const barHeight = (dataArray[i] / 255) * height * 0.8;
-            const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
-            gradient.addColorStop(0, '#d4846a');
-            gradient.addColorStop(1, '#f7ce68');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
-            x += barWidth;
+        for (let i = 0; i < 64; i++) data[i] = Math.random() * 100 + 50;
+        const { width: w, height: h } = elements.waveformCanvas;
+        ctx.clearRect(0, 0, w, h);
+        const bw = (w / 64) * 2.5; let x = 0;
+        for (let i = 0; i < 64; i++) {
+            const bh = (data[i] / 255) * h * 0.8;
+            const g = ctx.createLinearGradient(0, h, 0, h - bh); g.addColorStop(0, '#d4846a'); g.addColorStop(1, '#f7ce68');
+            ctx.fillStyle = g; ctx.fillRect(x, h - bh, bw - 1, bh); x += bw;
         }
     };
-    
-    elements.waveformCanvas.classList.add('active');
-    draw();
-}
+    elements.waveformCanvas.classList.add('active'); draw();
+};
 
-function stopWaveformAnimation() {
-    if (state.waveformAnimationId) {
-        cancelAnimationFrame(state.waveformAnimationId);
-        state.waveformAnimationId = null;
-    }
-    if (elements.waveformCanvas) {
-        elements.waveformCanvas.classList.remove('active');
-        elements.waveformCanvas.getContext('2d').clearRect(0, 0, elements.waveformCanvas.width, elements.waveformCanvas.height);
-    }
-}
+const stopWaveform = () => {
+    if (state.waveformAnimationId) { cancelAnimationFrame(state.waveformAnimationId); state.waveformAnimationId = null; }
+    if (elements.waveformCanvas) { elements.waveformCanvas.classList.remove('active'); elements.waveformCanvas.getContext('2d').clearRect(0, 0, elements.waveformCanvas.width, elements.waveformCanvas.height); }
+};
 
-// Video Controls
-function switchVideo(videoElement, loop = false) {
-    [elements.videoGreeting, elements.videoIdle, elements.videoGoodbye].forEach(v => {
-        if (v !== videoElement) {
-            v.classList.remove('active');
-            v.pause();
-        }
-    });
-    videoElement.classList.add('active');
-    videoElement.loop = loop;
-    videoElement.muted = true;
-    videoElement.currentTime = 0;
-    videoElement.play().catch(() => document.addEventListener('click', () => videoElement.play(), { once: true }));
-    state.currentVideo = videoElement;
-}
+// Video
+const switchVideo = (v, loop = false) => {
+    [elements.videoGreeting, elements.videoIdle, elements.videoGoodbye].forEach(x => { if (x !== v) { x.classList.remove('active'); x.pause(); } });
+    v.classList.add('active'); v.loop = loop; v.muted = true; v.currentTime = 0;
+    v.play().catch(() => document.addEventListener('click', () => v.play(), { once: true }));
+    state.currentVideo = v;
+};
 
-function playGreeting() {
-    const greetingMessage = getGreetingMessage();
-    const greetingText = document.querySelector('.greeting-text');
-    if (greetingText) greetingText.textContent = greetingMessage;
-    
-    const startVideo = () => {
-        switchVideo(elements.videoGreeting, true);
-        setTimeout(() => displayResponse(greetingMessage), 500);
-    };
-    
-    if (elements.videoGreeting.readyState >= 3) startVideo();
-    else elements.videoGreeting.addEventListener('canplay', startVideo, { once: true });
-}
+const playGreeting = () => {
+    const msg = getGreeting();
+    const gt = document.querySelector('.greeting-text'); if (gt) gt.textContent = msg;
+    const start = () => { switchVideo(elements.videoGreeting, true); setTimeout(() => displayResponse(msg), 500); };
+    elements.videoGreeting.readyState >= 3 ? start() : elements.videoGreeting.addEventListener('canplay', start, { once: true });
+};
 
-function playIdle() { switchVideo(elements.videoIdle, true); }
-function playGoodbye() { switchVideo(elements.videoGoodbye, false); displayResponse("Thank you for visiting. Goodbye!"); }
+const playIdle = () => switchVideo(elements.videoIdle, true);
+const playGoodbye = () => { switchVideo(elements.videoGoodbye, false); displayResponse("Thank you for visiting. Goodbye!"); };
+const preloadVideos = () => [elements.videoGreeting, elements.videoIdle, elements.videoGoodbye].forEach(v => { v.muted = true; v.volume = 0; v.load(); });
 
-function preloadVideos() {
-    [elements.videoGreeting, elements.videoIdle, elements.videoGoodbye].forEach(v => {
-        v.muted = true;
-        v.volume = 0;
-        v.load();
-    });
-}
-
-// Event Listeners
-function setupEventListeners() {
+// Events
+const setupEvents = () => {
     elements.sendBtn.addEventListener('click', handleSend);
-    elements.userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
-        }
-    });
+    elements.userInput.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
     elements.voiceToggle.addEventListener('click', toggleVoice);
     elements.micBtn?.addEventListener('click', () => state.isListening ? stopListening() : startListening());
-    
-    document.querySelectorAll('.suggestion-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            elements.userInput.value = btn.getAttribute('data-query');
-            handleSend();
-        });
-    });
-    
-    document.querySelectorAll('.quick-action-btn[data-query]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            elements.userInput.value = btn.getAttribute('data-query');
-            handleSend();
-        });
-    });
-}
+    document.querySelectorAll('.suggestion-btn').forEach(btn => btn.addEventListener('click', () => { elements.userInput.value = btn.getAttribute('data-query'); handleSend(); }));
+    document.querySelectorAll('.quick-action-btn[data-query]').forEach(btn => btn.addEventListener('click', () => { elements.userInput.value = btn.getAttribute('data-query'); handleSend(); }));
+};
 
-function handlePageLeave() {
-    document.querySelector('.close-btn').addEventListener('click', (e) => {
+const setupPageLeave = () => {
+    document.querySelector('.close-btn').addEventListener('click', e => {
         e.preventDefault();
-        if (!state.hasPlayedGoodbye) {
-            state.hasPlayedGoodbye = true;
-            playGoodbye();
-            setTimeout(() => window.location.href = 'index.html', 2500);
-        }
+        if (!state.hasPlayedGoodbye) { state.hasPlayedGoodbye = true; playGoodbye(); setTimeout(() => window.location.href = 'index.html', 2500); }
     });
-    
-    const cleanup = () => {
-        speechSynthesis.cancel();
-        stopWaveformAnimation();
-    };
-    
+    const cleanup = () => { speechSynthesis.cancel(); stopWaveform(); };
     window.addEventListener('pagehide', cleanup);
     window.addEventListener('beforeunload', () => speechSynthesis.cancel());
     document.addEventListener('visibilitychange', () => { if (document.hidden) cleanup(); });
-}
+};
 
 // Message Handling
 async function handleSend() {
-    const message = elements.userInput.value.trim();
-    if (!message || state.isProcessing) return;
+    const msg = elements.userInput.value.trim();
+    if (!msg) return;
+    if (state.isProcessing) { elements.userInput.value = ''; return; }
     
-    state.isProcessing = true;
-    elements.sendBtn.disabled = true;
-    elements.userInput.value = '';
+    state.isProcessing = true; elements.sendBtn.disabled = true;
+    elements.userInput.value = ''; elements.userInput.blur(); elements.userInput.focus();
     state.messageCount++;
 
-    // First message handling
     if (state.messageCount === 1) {
-        const currentGreeting = elements.responseText.textContent;
-        if (currentGreeting) {
-            addToChatHistory(currentGreeting, false);
-            state.lastAiResponse = currentGreeting;
-        }
-        switchToHorizontalLayout();
+        const g = elements.responseText.textContent;
+        if (g) { addToHistory(g, false); state.lastAiResponse = g; }
+        switchToHorizontal();
         if (state.currentVideo === elements.videoGreeting) switchVideo(elements.videoIdle, true);
-    } else if (state.lastAiResponse) {
-        addToChatHistory(state.lastAiResponse, false);
-    }
+    } else if (state.lastAiResponse) addToHistory(state.lastAiResponse, false);
 
-    addToChatHistory(message, true);
+    addToHistory(msg, true);
     elements.suggestions.style.display = 'none';
     document.getElementById('quick-actions')?.style.setProperty('display', 'none');
 
-    // Easter egg check
-    const easterEggResponse = checkEasterEgg(message);
-    if (easterEggResponse) {
-        setThinkingState(true);
-        await delay(800);
-        setThinkingState(false);
-        displayResponse(easterEggResponse, []);
-        state.lastAiResponse = easterEggResponse;
-        state.isProcessing = false;
-        elements.sendBtn.disabled = false;
-        return;
-    }
+    const egg = checkEasterEgg(msg);
+    if (egg) { setThinking(true); await delay(800); setThinking(false); displayResponse(egg); state.lastAiResponse = egg; state.isProcessing = false; elements.sendBtn.disabled = false; return; }
 
-    setThinkingState(true);
-    state.conversationHistory.push({ role: 'user', content: message });
+    setThinking(true);
+    state.conversationHistory.push({ role: 'user', content: msg });
+    if (state.pendingToolCall) { document.querySelector('.tool-approval-buttons')?.remove(); state.pendingToolCall = null; }
 
     try {
-        const response = await fetch('/.netlify/functions/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                message,
-                history: state.conversationHistory.slice(-10),
-                toolExecutionData: state.pendingToolCall
-            })
-        });
-        
-        if (!response.ok) throw new Error('Request failed');
-        const data = await response.json();
-        
-        console.log('📥 Response data:', data);
-        console.log('📥 pendingToolCall:', state.pendingToolCall);
-        console.log('📥 toolCall in response:', data.toolCall);
+        const res = await fetch('/.netlify/functions/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, history: state.conversationHistory.slice(-10) }) });
+        if (!res.ok) throw new Error('Failed');
+        const data = await res.json();
+        setThinking(false);
 
-        setThinkingState(false);
+        if (data.toolCall?.requiresApproval) {
+            state.pendingToolCall = data.toolCall;
+            displayResponse(data.response); state.lastAiResponse = data.response;
+            state.conversationHistory.push({ role: 'assistant', content: data.response });
+            addApprovalButtons(data.toolCall);
+        } else {
+            const bot = data.response || "Could you rephrase that?";
+            state.conversationHistory.push({ role: 'assistant', content: bot });
+            displayResponse(bot, getActions(msg, bot));
+            if (data.schedulingUrl) addSchedulingCard(data.schedulingUrl, data.eventName, data.duration);
+            state.lastAiResponse = bot;
+        }
+    } catch {
+        setThinking(false);
+        const err = "Having trouble connecting. Email me at dishasawantt@gmail.com.";
+        displayResponse(err, ['email']); state.lastAiResponse = err;
+    } finally { state.isProcessing = false; elements.sendBtn.disabled = false; elements.userInput.focus(); }
+}
 
-        if (state.pendingToolCall) {
-            state.pendingToolCall = null;
-            displayResponse(data.response, []);
+const delay = ms => new Promise(r => setTimeout(r, ms));
+const checkEasterEgg = msg => easterEggs.triggers.some(t => msg.toLowerCase().includes(t)) ? easterEggs.responses[Math.floor(Math.random() * easterEggs.responses.length)] : null;
+
+const getActions = (user, bot) => {
+    const lower = (user + ' ' + bot).toLowerCase();
+    const map = { projects: ['project', 'brain tumor', 'emotion ai'], github: ['github', 'code'], resume: ['resume', 'cv', 'hire'], email: ['contact', 'reach'], linkedin: ['linkedin', 'network'] };
+    return [...new Set(Object.entries(map).filter(([, kw]) => kw.some(k => lower.includes(k))).map(([a]) => a))].slice(0, 2);
+};
+
+// UI
+const setThinking = on => {
+    if (on) { elements.avatarName.classList.add('thinking'); elements.responseText.innerHTML = '<div class="thinking-indicator"><span>Thinking</span><div class="thinking-dots"><span></span><span></span><span></span></div></div>'; playIdle(); }
+    else elements.avatarName.classList.remove('thinking');
+};
+
+const displayResponse = (text, actions = []) => { if (state.voiceEnabled) speak(text); typeText(text, () => { if (actions.length) showQuickActions(actions); }); elements.responseArea.scrollTop = 0; };
+
+const showQuickActions = keys => {
+    document.querySelector('.quick-actions')?.remove();
+    const c = document.createElement('div'); c.className = 'quick-actions';
+    keys.forEach(k => {
+        const a = quickActions[k]; if (!a) return;
+        const link = document.createElement('a');
+        link.href = a.href; link.className = 'quick-action-btn';
+        link.target = a.href.startsWith('http') ? '_blank' : '_self'; link.rel = 'noopener';
+        link.innerHTML = `<i class="${['fa-download', 'fa-envelope', 'fa-code'].includes(a.icon) ? 'fas' : 'fab'} ${a.icon}"></i> ${a.text}`;
+        c.appendChild(link);
+    });
+    document.querySelector('.chat-section').insertBefore(c, document.querySelector('.input-area'));
+    requestAnimationFrame(() => c.classList.add('visible'));
+};
+
+const typeText = (text, done = null) => {
+    elements.responseText.innerHTML = '<span class="cursor">|</span>';
+    document.querySelector('.quick-actions')?.remove();
+    const cursor = elements.responseText.querySelector('.cursor'), chars = text.split('');
+    let i = 0;
+    const type = () => {
+        if (i < chars.length) {
+            const ch = chars[i], span = document.createElement('span');
+            span.className = 'char'; span.innerHTML = ch === '\n' ? '<br>' : ch === ' ' ? ' ' : ch;
+            elements.responseText.insertBefore(span, cursor); i++;
+            elements.responseArea.scrollTop = elements.responseArea.scrollHeight;
+            setTimeout(type, '.!?'.includes(ch) ? 150 : ',;:'.includes(ch) ? 80 : 25);
+        } else { cursor.remove(); done?.(); }
+    };
+    type();
+};
+
+// Tool Approval
+const addApprovalButtons = tc => {
+    document.querySelector('.tool-approval-buttons')?.remove();
+    const div = document.createElement('div'); div.className = 'tool-approval-buttons';
+    const labels = { send_documents: '<i class="fas fa-file-pdf"></i> Send Documents', schedule_meeting: '<i class="fas fa-calendar-alt"></i> Schedule Meeting' };
+    
+    const approve = document.createElement('button'); approve.className = 'btn btn-approve';
+    approve.innerHTML = labels[tc.function] || '<i class="fas fa-check"></i> Proceed';
+    approve.onclick = async () => {
+        div.remove(); setThinking(true);
+        try {
+            const res = await fetch('/.netlify/functions/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: '', history: state.conversationHistory.slice(-10), toolExecutionData: state.pendingToolCall }) });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            state.pendingToolCall = null; setThinking(false);
+            displayResponse(data.response);
             if (data.schedulingUrl) addSchedulingCard(data.schedulingUrl, data.eventName, data.duration);
             state.lastAiResponse = data.response;
             state.conversationHistory.push({ role: 'assistant', content: data.response });
-        } else if (data.toolCall?.requiresApproval) {
-            console.log('✅ Got toolCall with approval required:', data.toolCall);
-            state.pendingToolCall = data.toolCall;
-            displayResponse(data.response, []);
-            state.lastAiResponse = data.response;
-            state.conversationHistory.push({ role: 'assistant', content: data.response });
-            console.log('🔘 Adding approval buttons...');
-            addApprovalButtons(data.toolCall);
-        } else {
-            console.log('💬 Regular response (no toolCall)');
-
-            const botResponse = data.response || "I apologize, but I could not process that request.";
-            state.conversationHistory.push({ role: 'assistant', content: botResponse });
-            displayResponse(botResponse, getContextualActions(message, botResponse));
-            state.lastAiResponse = botResponse;
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        setThinkingState(false);
-        const errorMsg = "I am having trouble connecting. Please try again or reach out via email at dishasawantt@gmail.com.";
-        displayResponse(errorMsg, ['email']);
-        state.lastAiResponse = errorMsg;
-    } finally {
-        state.isProcessing = false;
-        elements.sendBtn.disabled = false;
-        elements.userInput.focus();
-    }
-}
-
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-function checkEasterEgg(message) {
-    const lower = message.toLowerCase();
-    if (easterEggs.triggers.some(t => lower.includes(t))) {
-        return easterEggs.responses[Math.floor(Math.random() * easterEggs.responses.length)];
-    }
-    return null;
-}
-
-function getContextualActions(userMessage, botResponse) {
-    const lower = (userMessage + ' ' + botResponse).toLowerCase();
-    const actionMap = {
-        resume: ['resume', 'cv', 'hire'],
-        github: ['project', 'code', 'github'],
-        projects: ['project', 'code'],
-        email: ['contact', 'reach', 'connect', 'interview'],
-        linkedin: ['linkedin', 'network', 'connect']
+        } catch { setThinking(false); displayResponse("Had trouble. Try again."); state.pendingToolCall = null; }
     };
     
-    const actions = [];
-    for (const [action, keywords] of Object.entries(actionMap)) {
-        if (keywords.some(k => lower.includes(k))) actions.push(action);
-    }
-    return [...new Set(actions)].slice(0, 2);
-}
+    const cancel = document.createElement('button'); cancel.className = 'btn btn-cancel';
+    cancel.innerHTML = '<i class="fas fa-times"></i> Cancel';
+    cancel.onclick = () => { state.pendingToolCall = null; div.remove(); const m = "No problem! Let me know if you need anything."; addToHistory(m, false); state.lastAiResponse = m; state.conversationHistory.push({ role: 'assistant', content: m }); };
+    
+    div.appendChild(approve); div.appendChild(cancel);
+    document.querySelector('.chat-section').insertBefore(div, document.querySelector('.input-area'));
+};
 
-// UI State
-function setThinkingState(thinking) {
-    if (thinking) {
-        elements.avatarName.classList.add('thinking');
-        elements.responseText.innerHTML = '<div class="thinking-indicator"><span>Thinking</span><div class="thinking-dots"><span></span><span></span><span></span></div></div>';
-        playIdle();
-    } else {
-        elements.avatarName.classList.remove('thinking');
-    }
-}
-
-function displayResponse(text, actionKeys = []) {
-    if (state.voiceEnabled) speak(text);
-    typeText(text, () => { if (actionKeys.length) showQuickActions(actionKeys); });
-    elements.responseArea.scrollTop = 0;
-}
-
-function showQuickActions(actionKeys) {
-    document.querySelector('.quick-actions')?.remove();
-    const container = document.createElement('div');
-    container.className = 'quick-actions';
-    
-    actionKeys.forEach(key => {
-        const action = quickActions[key];
-        if (action) {
-            const link = document.createElement('a');
-            link.href = action.href;
-            link.className = 'quick-action-btn';
-            link.target = action.href.startsWith('http') ? '_blank' : '_self';
-            link.rel = 'noopener';
-            const iconClass = ['fa-download', 'fa-envelope', 'fa-code'].includes(action.icon) ? 'fas' : 'fab';
-            link.innerHTML = `<i class="${iconClass} ${action.icon}"></i> ${action.text}`;
-            container.appendChild(link);
-        }
-    });
-    
-    document.querySelector('.chat-section').insertBefore(container, document.querySelector('.input-area'));
-    requestAnimationFrame(() => container.classList.add('visible'));
-}
-
-function typeText(text, onComplete = null) {
-    elements.responseText.innerHTML = '<span class="cursor">|</span>';
-    document.querySelector('.quick-actions')?.remove();
-    const cursor = elements.responseText.querySelector('.cursor');
-    const chars = text.split('');
-    let i = 0;
-    
-    const typeChar = () => {
-        if (i < chars.length) {
-            const char = chars[i];
-            const span = document.createElement('span');
-            span.className = 'char';
-            span.innerHTML = char === '\n' ? '<br>' : char === ' ' ? ' ' : char;
-            elements.responseText.insertBefore(span, cursor);
-            i++;
-            elements.responseArea.scrollTop = elements.responseArea.scrollHeight;
-            const charDelay = '.!?'.includes(char) ? 150 : ',;:'.includes(char) ? 80 : 25;
-            setTimeout(typeChar, charDelay);
-        } else {
-            cursor.remove();
-            if (onComplete) onComplete();
-        }
-    };
-    typeChar();
-}
-
-// Tool Approval UI
-function addApprovalButtons(toolCall) {
-    document.querySelector('.tool-approval-buttons')?.remove();
-    
-    const approvalDiv = document.createElement('div');
-    approvalDiv.className = 'tool-approval-buttons';
-    
-    const buttonLabels = {
-        send_contact_email: '<i class="fas fa-paper-plane"></i> Send Message',
-        send_documents: '<i class="fas fa-file-pdf"></i> Send Documents',
-        schedule_meeting: '<i class="fas fa-calendar-check"></i> Get Link'
-    };
-    
-    const approveBtn = document.createElement('button');
-    approveBtn.className = 'btn btn-approve';
-    approveBtn.innerHTML = buttonLabels[toolCall.function] || '<i class="fas fa-check"></i> Proceed';
-    approveBtn.onclick = async () => {
-        approvalDiv.remove();
-        setThinkingState(true);
-        
-        try {
-            console.log('🚀 Executing tool:', state.pendingToolCall);
-            const response = await fetch('/.netlify/functions/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: '',
-                    history: state.conversationHistory.slice(-10),
-                    toolExecutionData: state.pendingToolCall
-                })
-            });
-            
-            if (!response.ok) throw new Error('Request failed');
-            const data = await response.json();
-            console.log('📥 Tool execution result:', data);
-            
-            state.pendingToolCall = null;
-            setThinkingState(false);
-            displayResponse(data.response, []);
-            
-            if (data.schedulingUrl) {
-                addSchedulingCard(data.schedulingUrl, data.eventName, data.duration);
-            }
-            
-            state.lastAiResponse = data.response;
-            state.conversationHistory.push({ role: 'assistant', content: data.response });
-            addToChatHistory(data.response, false);
-        } catch (error) {
-            console.error('Tool execution error:', error);
-            setThinkingState(false);
-            const errorMsg = "I had trouble with that. Please try again.";
-            displayResponse(errorMsg, []);
-            state.pendingToolCall = null;
-        }
-    };
-    
-    const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'btn btn-cancel';
-    cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
-    cancelBtn.onclick = () => {
-        state.pendingToolCall = null;
-        approvalDiv.remove();
-        const cancelMsg = "No problem! Let me know if you need anything else.";
-        addToChatHistory(cancelMsg, false);
-        state.lastAiResponse = cancelMsg;
-        state.conversationHistory.push({ role: 'assistant', content: cancelMsg });
-    };
-    
-    approvalDiv.appendChild(approveBtn);
-    approvalDiv.appendChild(cancelBtn);
-    document.querySelector('.chat-section').insertBefore(approvalDiv, document.querySelector('.input-area'));
-}
-
-function addSchedulingCard(url, eventName, duration) {
+const addSchedulingCard = (url, name, duration) => {
     document.querySelector('.scheduling-card')?.remove();
-    
-    const cardDiv = document.createElement('div');
-    cardDiv.className = 'scheduling-card';
-    const durationText = duration ? `${duration} minutes` : '';
-    
-    cardDiv.innerHTML = `
-        <div class="scheduling-card-header">
-            <i class="fas fa-calendar-alt"></i>
-            <h3>${eventName || 'Schedule a Meeting'}</h3>
-        </div>
-        ${durationText ? `<p class="scheduling-duration">${durationText}</p>` : ''}
-        <a href="${url}" target="_blank" rel="noopener noreferrer" class="scheduling-link-btn">
-            <i class="fas fa-external-link-alt"></i> Open Calendar
-        </a>
-        <button class="copy-link-btn" onclick="copySchedulingLink('${url}')">
-            <i class="fas fa-copy"></i> Copy Link
-        </button>
-    `;
-    
-    document.querySelector('.chat-section').insertBefore(cardDiv, document.querySelector('.input-area'));
-    setTimeout(() => cardDiv.classList.add('visible'), 100);
-}
+    const card = document.createElement('div'); card.className = 'scheduling-card';
+    card.innerHTML = `<div class="scheduling-card-header"><i class="fas fa-calendar-alt"></i><h3>${name || 'Schedule Meeting'}</h3></div>
+        ${duration ? `<p class="scheduling-duration">${duration} minutes</p>` : ''}
+        <a href="${url}" target="_blank" rel="noopener" class="scheduling-link-btn"><i class="fas fa-external-link-alt"></i> Open Calendar</a>
+        <button class="copy-link-btn" onclick="copySchedulingLink('${url}')"><i class="fas fa-copy"></i> Copy Link</button>`;
+    document.querySelector('.chat-section').insertBefore(card, document.querySelector('.input-area'));
+    setTimeout(() => card.classList.add('visible'), 100);
+};
 
-function copySchedulingLink(url) {
+const copySchedulingLink = url => {
     navigator.clipboard.writeText(url).then(() => {
         const btn = document.querySelector('.copy-link-btn');
-        const originalHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-        setTimeout(() => {
-            btn.innerHTML = originalHTML;
-            btn.style.background = '';
-        }, 2000);
-    }).catch(err => console.error('Failed to copy:', err));
-}
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!'; btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+        setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2000);
+    }).catch(() => {});
+};
 
 window.copySchedulingLink = copySchedulingLink;
