@@ -115,9 +115,15 @@ const validateToolParams = (fn, args) => {
 };
 
 const getToolPreview = (fn, args) => ({
-    send_documents: `I'll send my resume to ${args.recipientEmail}. Should I proceed?`,
-    schedule_meeting: `I'll get you a ${args.meetingType === 'quick_chat' ? '15-min' : args.meetingType === 'interview' ? '45-min' : '30-min'} scheduling link!`
-})[fn] || "Proceed?";
+    send_documents: `Perfect! I'll send my resume to ${args.recipientEmail}. Ready to send?`,
+    schedule_meeting: `Great, I'll get you a ${args.meetingType === 'quick_chat' ? '15-minute' : args.meetingType === 'interview' ? '45-minute' : '30-minute'} scheduling link.`
+})[fn] || "Should I proceed?";
+
+const sanitizeResponse = text => {
+    if (!text) return null;
+    if (/\{.*".*":.*\}|function=|<\/function>|\[".*"\]/s.test(text)) return null;
+    return text.replace(/\(function.*?\)/g, '').replace(/<[^>]+>/g, '').trim();
+};
 
 const executeTool = async ({ function: fn, arguments: args }) => {
     const baseUrl = process.env.URL || 'http://localhost:8888';
@@ -185,12 +191,13 @@ exports.handler = async (event) => {
             if (!validation.valid) return successResponse({ response: validation.message });
             
             return successResponse({
-                response: msg.content || getToolPreview(fn, args),
+                response: getToolPreview(fn, args),
                 toolCall: { function: fn, arguments: args, requiresApproval: true }
             });
         }
 
-        return successResponse({ response: msg.content || "Could you rephrase that?" });
+        const cleanResponse = sanitizeResponse(msg.content) || "Could you rephrase that?";
+        return successResponse({ response: cleanResponse });
     } catch (e) {
         logError("API Error:", e.message);
         return e.status === 429 
