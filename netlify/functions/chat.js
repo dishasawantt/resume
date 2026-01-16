@@ -74,9 +74,10 @@ LinkedIn: linkedin.com/in/disha-sawant-7877b21b6 | GitHub: github.com/dishasawan
 EDUCATION: MS CompE @ SDSU (2024-26, 3.5 GPA, AI focus) | BS CompE @ Mumbai (2018-22, 3.7 GPA)
 
 EXPERIENCE:
-- AI Intern @ Ema Unlimited (2025): Built agentic workflows for insurance claims triage, Zendesk/Freshdesk automation, HR recruiting with Ashby API
+- AI Intern @ Ema Unlimited (Summer 2025): Built agentic workflows for insurance claims triage, Zendesk/Freshdesk automation, HR recruiting with Ashby API
 - Data Engineer @ Image Computers (2022-24): ETL pipelines handling 500K+ daily records, predictive maintenance dashboards
 - Earlier: Data roles at Saint Louis Univ, PlotMyData, Beat The Virus, GreatAlbum
+Note: Currently a grad student at SDSU, not employed. Ema was a summer internship that ended.
 
 PROJECTS:
 - Brain Tumor AI: ResNet50 + ResUNet for MRI classification and segmentation
