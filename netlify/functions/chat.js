@@ -256,6 +256,9 @@ function validateToolParams(fn, args) {
         if (!recipientName || recipientName.length < 2) {
             return { valid: false, message: "I'd be happy to send you my resume! What's your name?" };
         }
+        if (/disha|sawant/i.test(recipientName)) {
+            return { valid: false, message: "I'd be happy to send you my resume! What's your name?" };
+        }
         if (!recipientEmail) {
             return { valid: false, message: `Thanks ${recipientName}! What's your email address?` };
         }
@@ -272,6 +275,17 @@ function validateToolParams(fn, args) {
     }
     
     return { valid: true };
+}
+
+function sanitizeResponse(text) {
+    if (!text) return null;
+    const cleaned = text
+        .replace(/function=\w+>.*?<\/function>/gs, '')
+        .replace(/<function.*?<\/function>/gs, '')
+        .replace(/\{[^{}]*"(documents|recipientEmail|recipientName)"[^{}]*\}/g, '')
+        .replace(/```[\s\S]*?```/g, '')
+        .trim();
+    return cleaned || null;
 }
 
 function getToolPreview(fn, args) {
@@ -368,12 +382,12 @@ exports.handler = async (event) => {
 
             log('✅ Validation passed');
             return successResponse({
-                response: responseMsg.content || getToolPreview(fn, args),
+                response: sanitizeResponse(responseMsg.content) || getToolPreview(fn, args),
                 toolCall: { function: fn, arguments: args, requiresApproval: true }
             });
         }
 
-        return successResponse({ response: responseMsg.content || "I couldn't generate a response. Please try again!" });
+        return successResponse({ response: sanitizeResponse(responseMsg.content) || "I couldn't generate a response. Please try again!" });
 
     } catch (error) {
         logError("Groq API Error:", error.message);
