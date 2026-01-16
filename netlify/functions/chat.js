@@ -279,13 +279,10 @@ function validateToolParams(fn, args) {
 
 function sanitizeResponse(text) {
     if (!text) return null;
-    const cleaned = text
-        .replace(/function=\w+>.*?<\/function>/gs, '')
-        .replace(/<function.*?<\/function>/gs, '')
-        .replace(/\{[^{}]*"(documents|recipientEmail|recipientName)"[^{}]*\}/g, '')
-        .replace(/```[\s\S]*?```/g, '')
-        .trim();
-    return cleaned || null;
+    return text
+        .replace(/function=\w+>[\s\S]*?<\/function>/g, '')
+        .replace(/<function[\s\S]*?<\/function>/g, '')
+        .trim() || null;
 }
 
 function getToolPreview(fn, args) {
