@@ -1,0 +1,11 @@
+{
+  "name": "disha-chat",
+  "version": "1.0.0",
+  "description": "AI Chatbot for Disha Sawant's Portfolio - Hosted on Cloudflare Pages",
+  "scripts": {
+    "dev": "wrangler pages dev ."
+  },
+  "keywords": ["chatbot", "ai", "cloudflare"],
+  "author": "Disha Sawant",
+  "license": "MIT"
+}
