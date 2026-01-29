@@ -179,13 +179,21 @@ function setupVoiceSelector() {
 function speak(text) {
     if (!state.voiceEnabled || !text) return;
     speechSynthesis.cancel();
+    if (!state.allVoices.length) {
+        state.allVoices = speechSynthesis.getVoices();
+        if (!state.preferredVoice && state.allVoices.length) {
+            state.preferredVoice = state.allVoices.find(v => v.lang.startsWith('en')) || state.allVoices[0];
+        }
+    }
     const u = new SpeechSynthesisUtterance(text);
     u.voice = state.preferredVoice;
     u.rate = 0.95;
     u.pitch = 1.0;
     u.onstart = startWaveformAnimation;
     u.onend = stopWaveformAnimation;
+    u.onerror = (e) => console.log('Speech error:', e);
     speechSynthesis.speak(u);
+    if (speechSynthesis.paused) speechSynthesis.resume();
 }
 
 function toggleVoice() {
@@ -288,7 +296,9 @@ function playGreeting() {
     const speakGreetingOnInteraction = () => {
         if (!state.hasSpokenGreeting && state.voiceEnabled && state.greetingMessage) {
             state.hasSpokenGreeting = true;
-            speak(state.greetingMessage);
+            const warmup = new SpeechSynthesisUtterance('');
+            speechSynthesis.speak(warmup);
+            setTimeout(() => speak(state.greetingMessage), 100);
         }
     };
     document.addEventListener('click', speakGreetingOnInteraction, { once: true });
