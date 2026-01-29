@@ -1,6 +1,10 @@
 # Portfolio Website - Disha Sawant
 
-A modern, responsive portfolio website showcasing professional experience, education, skills, and projects. Built with vanilla HTML, CSS, and JavaScript for optimal performance and easy deployment.
+A modern, responsive portfolio website showcasing professional experience, education, skills, and projects. Built with vanilla HTML, CSS, and JavaScript for optimal performance. Hosted on GitHub Pages.
+
+**Live Site:** https://dishasawantt.github.io/resume
+
+**AI Chatbot:** https://disha-chat.pages.dev (separate project)
 
 ## Features
 

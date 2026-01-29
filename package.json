@@ -1,27 +1,16 @@
 {
   "name": "disha-sawant-portfolio",
   "version": "1.0.0",
-  "description": "Disha Sawant's Portfolio Website with AI Chatbot",
+  "description": "Disha Sawant's Portfolio Website",
   "main": "index.html",
   "scripts": {
-    "dev": "wrangler pages dev . --compatibility-flag=nodejs_compat",
-    "dev:netlify": "netlify dev",
-    "build": "echo 'Static site - no build needed'",
-    "deploy": "wrangler pages deploy .",
-    "deploy:preview": "wrangler pages deploy . --branch=preview"
-  },
-  "dependencies": {
-    "groq-sdk": "^0.5.0"
+    "serve": "npx serve .",
+    "build": "echo 'Static site - no build needed'"
   },
   "keywords": [
     "portfolio",
-    "chatbot",
-    "ai",
-    "cloudflare"
+    "resume"
   ],
   "author": "Disha Sawant",
-  "license": "MIT",
-  "devDependencies": {
-    "wrangler": "^3.0.0"
-  }
+  "license": "MIT"
 }
