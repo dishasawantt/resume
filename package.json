@@ -1,16 +1,12 @@
 {
   "name": "disha-sawant-portfolio",
   "version": "1.0.0",
-  "description": "Disha Sawant's Portfolio Website",
+  "description": "Disha Sawant's Portfolio Website - Hosted on GitHub Pages",
   "main": "index.html",
   "scripts": {
-    "serve": "npx serve .",
-    "build": "echo 'Static site - no build needed'"
+    "serve": "npx serve ."
   },
-  "keywords": [
-    "portfolio",
-    "resume"
-  ],
+  "keywords": ["portfolio", "resume"],
   "author": "Disha Sawant",
   "license": "MIT"
 }
