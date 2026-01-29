@@ -4,23 +4,24 @@
   "description": "Disha Sawant's Portfolio Website with AI Chatbot",
   "main": "index.html",
   "scripts": {
-    "dev": "netlify dev",
-    "build": "echo 'Static site - no build needed'"
+    "dev": "wrangler pages dev . --compatibility-flag=nodejs_compat",
+    "dev:netlify": "netlify dev",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "wrangler pages deploy .",
+    "deploy:preview": "wrangler pages deploy . --branch=preview"
   },
   "dependencies": {
-    "@sendgrid/mail": "^8.1.6",
-    "groq-sdk": "^0.5.0",
-    "node-fetch": "^2.7.0",
-    "resend": "^6.7.0"
+    "groq-sdk": "^0.5.0"
   },
   "keywords": [
     "portfolio",
     "chatbot",
-    "ai"
+    "ai",
+    "cloudflare"
   ],
   "author": "Disha Sawant",
   "license": "MIT",
   "devDependencies": {
-    "netlify-cli": "^23.13.3"
+    "wrangler": "^3.0.0"
   }
 }

@@ -1,174 +1,158 @@
-// DOM Elements
+const $ = id => document.getElementById(id);
+const $$ = sel => document.querySelectorAll(sel);
+
 const elements = {
-    videoGreeting: document.getElementById('video-greeting'),
-    videoIdle: document.getElementById('video-idle'),
-    videoGoodbye: document.getElementById('video-goodbye'),
-    responseArea: document.getElementById('response-area'),
-    responseText: document.getElementById('response-text'),
-    userInput: document.getElementById('user-input'),
-    sendBtn: document.getElementById('send-btn'),
-    voiceToggle: document.getElementById('voice-toggle'),
-    micBtn: document.getElementById('mic-btn'),
-    waveformCanvas: document.getElementById('waveform'),
-    suggestions: document.getElementById('suggestions'),
-    avatarName: document.getElementById('avatar-name'),
-    themeToggle: document.getElementById('theme-toggle'),
-    avatarContent: document.querySelector('.avatar-content'),
-    chatHistory: document.getElementById('chat-history'),
-    voiceSelector: document.getElementById('voice-selector'),
-    voiceSelectorToggle: document.getElementById('voice-selector-toggle'),
-    voiceDropdownClose: document.getElementById('voice-dropdown-close'),
-    voiceSelect: document.getElementById('voice-select'),
-    voicePreviewBtn: document.getElementById('voice-preview-btn')
+    videoGreeting: $('video-greeting'), videoIdle: $('video-idle'), videoGoodbye: $('video-goodbye'),
+    responseArea: $('response-area'), responseText: $('response-text'), userInput: $('user-input'),
+    sendBtn: $('send-btn'), voiceToggle: $('voice-toggle'), micBtn: $('mic-btn'),
+    waveformCanvas: $('waveform'), suggestions: $('suggestions'), avatarName: $('avatar-name'),
+    themeToggle: $('theme-toggle'), avatarContent: document.querySelector('.avatar-content'),
+    chatHistory: $('chat-history'), voiceSelector: $('voice-selector'),
+    voiceSelectorToggle: $('voice-selector-toggle'), voiceDropdownClose: $('voice-dropdown-close'),
+    voiceSelect: $('voice-select'), voicePreviewBtn: $('voice-preview-btn')
 };
 
-// State
 const state = {
-    currentVideo: null,
-    isProcessing: false,
-    voiceEnabled: true,
-    conversationHistory: [],
-    preferredVoice: null,
-    allVoices: [],
-    isHorizontalLayout: false,
-    messageCount: 0,
-    recognition: null,
-    isListening: false,
-    waveformAnimationId: null,
-    lastAiResponse: '',
-    hasPlayedGoodbye: false,
-    pendingToolCall: null
+    currentVideo: null, isProcessing: false, voiceEnabled: true, conversationHistory: [],
+    preferredVoice: null, allVoices: [], isHorizontalLayout: false, messageCount: 0,
+    recognition: null, isListening: false, waveformAnimationId: null, hasPlayedGoodbye: false,
+    pendingToolCall: null, typingTimeoutId: null, currentTypingText: null
 };
 
-// Configuration
-const quickActions = {
-    resume: { text: "Download Resume", href: "Disha Sawant Resume 2025.pdf", icon: "fa-download" },
-    github: { text: "View GitHub", href: "https://github.com/dishasawantt", icon: "fa-github" },
-    linkedin: { text: "Connect on LinkedIn", href: "https://linkedin.com/in/disha-sawant-7877b21b6/", icon: "fa-linkedin" },
-    email: { text: "Send Email", href: "mailto:dishasawantt@gmail.com", icon: "fa-envelope" },
-    projects: { text: "See All Projects", href: "index.html#projects", icon: "fa-code" }
+const CONFIG = {
+    quickActions: {
+        resume: { text: "Download Resume", href: "Disha Sawant Resume 2025.pdf", icon: "fa-download" },
+        github: { text: "View GitHub", href: "https://github.com/dishasawantt", icon: "fa-github", brand: true },
+        linkedin: { text: "Connect on LinkedIn", href: "https://linkedin.com/in/disha-sawant-7877b21b6/", icon: "fa-linkedin", brand: true },
+        email: { text: "Send Email", href: "mailto:dishasawantt@gmail.com", icon: "fa-envelope" },
+        projects: { text: "See All Projects", href: "index.html#projects", icon: "fa-code" },
+        certifications: { text: "View Certifications", href: "index.html#certifications", icon: "fa-certificate" },
+        experience: { text: "View Experience", href: "index.html#experience", icon: "fa-briefcase" },
+        education: { text: "View Education", href: "index.html#education", icon: "fa-graduation-cap" },
+        skills: { text: "View Skills", href: "index.html#skills", icon: "fa-tools" }
+    },
+    easterEggs: {
+        triggers: ['konami', 'secret', 'easter egg', 'hidden', 'surprise me'],
+        responses: [
+            "You found a secret! Fun fact: I once debugged code for 6 hours only to find a missing semicolon.",
+            "Easter egg unlocked! Did you know I've completed 72 LinkedIn Learning courses?",
+            "Secret discovered! This entire avatar experience was built with vanilla JavaScript.",
+            "Hidden message found! When I'm not coding, you'll find me painting watercolors or singing bhajans."
+        ]
+    },
+    suggestionSets: [
+        [{ text: "About Me", query: "Tell me about yourself" }, { text: "Ema AI Work", query: "Tell me about your AI work at Ema" }, { text: "22 Certifications", query: "What certifications do you have?" }, { text: "72 Courses", query: "Tell me about your continuous learning" }],
+        [{ text: "Experience", query: "What is your work experience?" }, { text: "Healthcare AI", query: "Tell me about your Brain Tumor AI project" }, { text: "Deep Learning", query: "Tell me about your Deep Learning specialization" }, { text: "Key Metrics", query: "What metrics have you achieved?" }],
+        [{ text: "Skills", query: "What are your technical skills?" }, { text: "Projects", query: "What projects have you worked on?" }, { text: "Hobbies", query: "What are your hobbies?" }, { text: "Contact", query: "How can I contact you?" }],
+        [{ text: "Education", query: "What is your educational background?" }, { text: "Big Data", query: "Tell me about your Big Data certifications" }, { text: "Best Project", query: "What's your most impactful project?" }, { text: "Why AI?", query: "Why are you passionate about AI?" }]
+    ],
+    actionKeywords: {
+        projects: ['project', 'brain tumor', 'emotion ai', 'credit default', 'mathui', 'voiceui', 'quadrotor', 'wordecho'],
+        github: ['github', 'code', 'repository', 'source'],
+        resume: ['resume', 'cv', 'hire'],
+        email: ['contact', 'reach out', 'email me'],
+        linkedin: ['linkedin', 'network', 'connection'],
+        certifications: ['certification', 'certificate', 'coursera', 'deeplearning.ai'],
+        experience: ['experience', 'work', 'job', 'intern', 'ema', 'image computers'],
+        education: ['education', 'degree', 'university', 'sdsu', 'mumbai', 'gpa'],
+        skills: ['skill', 'python', 'javascript', 'tensorflow', 'pytorch', 'react', 'docker', 'aws']
+    }
 };
 
-const easterEggs = {
-    triggers: ['konami', 'secret', 'easter egg', 'hidden', 'surprise me'],
-    responses: [
-        "You found a secret! Fun fact: I once debugged code for 6 hours only to find a missing semicolon.",
-        "Easter egg unlocked! Did you know I've completed 72 LinkedIn Learning courses?",
-        "Secret discovered! This entire avatar experience was built with vanilla JavaScript.",
-        "Hidden message found! When I'm not coding, you'll find me painting watercolors or singing bhajans."
-    ]
-};
-
-const suggestionSets = [
-    [{ text: "About Me", query: "Tell me about yourself" }, { text: "Ema AI Work", query: "Tell me about your AI work at Ema" }, { text: "22 Certifications", query: "What certifications do you have?" }, { text: "72 Courses", query: "Tell me about your continuous learning" }],
-    [{ text: "Experience", query: "What is your work experience?" }, { text: "Healthcare AI", query: "Tell me about your Brain Tumor AI project" }, { text: "Deep Learning", query: "Tell me about your Deep Learning specialization" }, { text: "Key Metrics", query: "What metrics have you achieved?" }],
-    [{ text: "Skills", query: "What are your technical skills?" }, { text: "Projects", query: "What projects have you worked on?" }, { text: "Hobbies", query: "What are your hobbies?" }, { text: "Contact", query: "How can I contact you?" }],
-    [{ text: "Education", query: "What is your educational background?" }, { text: "Big Data", query: "Tell me about your Big Data certifications" }, { text: "Best Project", query: "What's your most impactful project?" }, { text: "Why AI?", query: "Why are you passionate about AI?" }]
-];
-
-// Initialize
 document.addEventListener('DOMContentLoaded', () => {
     loadPreferredVoice();
     setupVoiceInput();
     setupVoiceSelector();
     setupThemeToggle();
     setupRotatingSuggestions();
-    playGreeting();
     setupEventListeners();
     handlePageLeave();
     preloadVideos();
+    playGreeting();
 });
 
-// Theme
 function setupThemeToggle() {
-    const savedTheme = localStorage.getItem('avatarTheme') || 'dark';
-    if (savedTheme === 'light') document.documentElement.setAttribute('data-theme', 'light');
-    elements.themeToggle.addEventListener('click', () => {
-        const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('avatarTheme', newTheme);
+    const saved = localStorage.getItem('avatarTheme') || 'dark';
+    if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    elements.themeToggle?.addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('avatarTheme', next);
     });
 }
 
-// Layout
 function switchToHorizontalLayout() {
-    if (state.isHorizontalLayout) return;
-    state.isHorizontalLayout = true;
-    elements.avatarContent.classList.add('horizontal');
+    if (!state.isHorizontalLayout) {
+        state.isHorizontalLayout = true;
+        elements.avatarContent?.classList.add('horizontal');
+    }
 }
 
-// Chat History
-function addToChatHistory(message, isUser = false) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `chat-message ${isUser ? 'user' : 'ai'}`;
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    contentDiv.innerHTML = message.replace(/\n/g, '<br>');
-    messageDiv.appendChild(contentDiv);
-    elements.chatHistory.appendChild(messageDiv);
-    elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight;
+function addToChatHistory(message, isUser = false, type = 'message') {
+    const div = document.createElement('div');
+    div.className = `chat-message ${isUser ? 'user' : 'ai'}${type !== 'message' ? ` ${type}` : ''}`;
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    content.innerHTML = message.replace(/\n/g, '<br>');
+    div.appendChild(content);
+    elements.chatHistory?.appendChild(div);
+    scrollToBottom();
 }
 
-// Greeting
+function scrollToBottom() {
+    elements.chatHistory && requestAnimationFrame(() => elements.chatHistory.scrollTop = elements.chatHistory.scrollHeight);
+}
+
 function getGreetingMessage() {
-    const hour = new Date().getHours();
-    const timeGreeting = hour >= 5 && hour < 12 ? "Good morning" : hour >= 12 && hour < 17 ? "Good afternoon" : hour >= 17 && hour < 21 ? "Good evening" : "Hello";
-    return `${timeGreeting} and Namaste, I am Disha. Feel free to ask me anything about my background, projects, or experience.`;
+    const h = new Date().getHours();
+    const greeting = h >= 5 && h < 12 ? "Good morning" : h >= 12 && h < 17 ? "Good afternoon" : h >= 17 && h < 21 ? "Good evening" : "Hello";
+    return `${greeting} and Namaste, I am Disha. Feel free to ask me anything about my background, projects, or experience.`;
 }
 
-// Suggestions
 function setupRotatingSuggestions() {
-    const randomSet = suggestionSets[Math.floor(Math.random() * suggestionSets.length)];
-    elements.suggestions.querySelectorAll('.suggestion-btn').forEach((btn, i) => {
-        if (randomSet[i]) {
-            btn.textContent = randomSet[i].text;
-            btn.setAttribute('data-query', randomSet[i].query);
-        }
+    const set = CONFIG.suggestionSets[Math.floor(Math.random() * CONFIG.suggestionSets.length)];
+    elements.suggestions?.querySelectorAll('.suggestion-btn').forEach((btn, i) => {
+        if (set[i]) { btn.textContent = set[i].text; btn.setAttribute('data-query', set[i].query); }
     });
 }
 
-// Voice
 function loadPreferredVoice() {
     const loadVoices = () => {
         state.allVoices = speechSynthesis.getVoices();
-        populateVoiceSelector(state.allVoices);
-        
-        const savedVoiceName = localStorage.getItem('preferredVoice');
-        if (savedVoiceName) {
-            const savedVoice = state.allVoices.find(v => v.name === savedVoiceName);
-            if (savedVoice) { state.preferredVoice = savedVoice; elements.voiceSelect.value = savedVoiceName; return; }
+        populateVoiceSelector();
+        const saved = localStorage.getItem('preferredVoice');
+        if (saved) {
+            const voice = state.allVoices.find(v => v.name === saved);
+            if (voice) { state.preferredVoice = voice; if (elements.voiceSelect) elements.voiceSelect.value = saved; return; }
         }
-        
-        const preferredNames = ['Samantha', 'Karen', 'Google US English Female', 'Microsoft Zira', 'Fiona'];
-        for (const name of preferredNames) {
+        const preferred = ['Samantha', 'Karen', 'Google US English Female', 'Microsoft Zira', 'Fiona'];
+        for (const name of preferred) {
             const found = state.allVoices.find(v => v.name.includes(name));
-            if (found) { state.preferredVoice = found; elements.voiceSelect.value = found.name; break; }
+            if (found) { state.preferredVoice = found; if (elements.voiceSelect) elements.voiceSelect.value = found.name; break; }
         }
-        
         if (!state.preferredVoice) {
-            state.preferredVoice = state.allVoices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) 
-                || state.allVoices.find(v => v.lang.startsWith('en')) || state.allVoices[0];
-            if (state.preferredVoice) elements.voiceSelect.value = state.preferredVoice.name;
+            state.preferredVoice = state.allVoices.find(v => v.lang.startsWith('en')) || state.allVoices[0];
+            if (state.preferredVoice && elements.voiceSelect) elements.voiceSelect.value = state.preferredVoice.name;
         }
     };
     loadVoices();
     speechSynthesis.onvoiceschanged = loadVoices;
 }
 
-function populateVoiceSelector(voices) {
+function populateVoiceSelector() {
+    if (!elements.voiceSelect) return;
     elements.voiceSelect.innerHTML = '';
-    const englishVoices = voices.filter(v => v.lang.startsWith('en'));
-    const otherVoices = voices.filter(v => !v.lang.startsWith('en'));
-    
-    [{ voices: englishVoices, label: 'English Voices' }, { voices: otherVoices, label: 'Other Languages' }].forEach(({ voices: voiceList, label }) => {
-        if (voiceList.length) {
+    [{ voices: state.allVoices.filter(v => v.lang.startsWith('en')), label: 'English Voices' },
+     { voices: state.allVoices.filter(v => !v.lang.startsWith('en')), label: 'Other Languages' }]
+    .forEach(({ voices, label }) => {
+        if (voices.length) {
             const group = document.createElement('optgroup');
             group.label = label;
-            voiceList.forEach(v => {
-                const option = document.createElement('option');
-                option.value = v.name;
-                option.textContent = `${v.name} (${v.lang})`;
-                group.appendChild(option);
+            voices.forEach(v => {
+                const opt = document.createElement('option');
+                opt.value = v.name;
+                opt.textContent = `${v.name} (${v.lang})`;
+                group.appendChild(opt);
             });
             elements.voiceSelect.appendChild(group);
         }
@@ -177,108 +161,91 @@ function populateVoiceSelector(voices) {
 
 function setupVoiceSelector() {
     if (!elements.voiceSelectorToggle) return;
-    
-    elements.voiceSelectorToggle.addEventListener('click', () => elements.voiceSelector.classList.toggle('open'));
-    elements.voiceDropdownClose.addEventListener('click', () => elements.voiceSelector.classList.remove('open'));
-    document.addEventListener('click', (e) => {
-        if (!elements.voiceSelector.contains(e.target)) elements.voiceSelector.classList.remove('open');
+    elements.voiceSelectorToggle.addEventListener('click', () => elements.voiceSelector?.classList.toggle('open'));
+    elements.voiceDropdownClose?.addEventListener('click', () => elements.voiceSelector?.classList.remove('open'));
+    document.addEventListener('click', e => {
+        if (elements.voiceSelector && !elements.voiceSelector.contains(e.target)) elements.voiceSelector.classList.remove('open');
     });
-    
-    elements.voiceSelect.addEventListener('change', () => {
-        const selectedVoice = state.allVoices.find(v => v.name === elements.voiceSelect.value);
-        if (selectedVoice) { state.preferredVoice = selectedVoice; localStorage.setItem('preferredVoice', elements.voiceSelect.value); }
+    elements.voiceSelect?.addEventListener('change', () => {
+        const voice = state.allVoices.find(v => v.name === elements.voiceSelect.value);
+        if (voice) { state.preferredVoice = voice; localStorage.setItem('preferredVoice', voice.name); }
     });
-    
-    elements.voicePreviewBtn.addEventListener('click', () => speak("Hello, this is how I will sound when speaking."));
+    elements.voicePreviewBtn?.addEventListener('click', () => speak("Hello, this is how I will sound when speaking."));
 }
 
 function speak(text) {
     if (!state.voiceEnabled || !text) return;
     speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.voice = state.preferredVoice;
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-    utterance.onstart = startWaveformAnimation;
-    utterance.onend = stopWaveformAnimation;
-    speechSynthesis.speak(utterance);
+    const u = new SpeechSynthesisUtterance(text);
+    u.voice = state.preferredVoice;
+    u.rate = 0.95;
+    u.pitch = 1.0;
+    u.onstart = startWaveformAnimation;
+    u.onend = stopWaveformAnimation;
+    speechSynthesis.speak(u);
 }
 
 function toggleVoice() {
     state.voiceEnabled = !state.voiceEnabled;
-    elements.voiceToggle.classList.toggle('muted', !state.voiceEnabled);
+    elements.voiceToggle?.classList.toggle('muted', !state.voiceEnabled);
     if (!state.voiceEnabled) { speechSynthesis.cancel(); stopWaveformAnimation(); }
 }
 
-// Voice Input
 function setupVoiceInput() {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        if (elements.micBtn) elements.micBtn.style.display = 'none';
-        return;
-    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { if (elements.micBtn) elements.micBtn.style.display = 'none'; return; }
     
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    state.recognition = new SpeechRecognition();
-    state.recognition.continuous = false;
-    state.recognition.interimResults = true;
-    state.recognition.lang = 'en-US';
+    state.recognition = new SR();
+    Object.assign(state.recognition, { continuous: false, interimResults: true, lang: 'en-US' });
     
     state.recognition.onstart = () => {
         state.isListening = true;
         elements.micBtn?.classList.add('listening');
-        elements.userInput.placeholder = 'Listening...';
+        if (elements.userInput) elements.userInput.placeholder = 'Listening...';
     };
-    
-    state.recognition.onresult = (event) => {
+    state.recognition.onresult = e => {
         let transcript = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) transcript += event.results[i][0].transcript;
-        elements.userInput.value = transcript;
-        if (event.results[event.results.length - 1].isFinal) { stopListening(); handleSend(); }
+        for (let i = e.resultIndex; i < e.results.length; i++) transcript += e.results[i][0].transcript;
+        if (elements.userInput) elements.userInput.value = transcript;
+        if (e.results[e.results.length - 1].isFinal) { stopListening(); handleSend(); }
     };
-    
-    state.recognition.onerror = stopListening;
-    state.recognition.onend = stopListening;
+    state.recognition.onerror = state.recognition.onend = stopListening;
 }
 
 function startListening() {
     if (!state.recognition || state.isListening || state.isProcessing) return;
-    try { state.recognition.start(); } catch (e) {}
+    try { state.recognition.start(); } catch {}
 }
 
 function stopListening() {
     state.isListening = false;
     elements.micBtn?.classList.remove('listening');
-    elements.userInput.placeholder = 'Ask me anything...';
-    try { state.recognition?.stop(); } catch (e) {}
+    if (elements.userInput) elements.userInput.placeholder = 'Ask me anything...';
+    try { state.recognition?.stop(); } catch {}
 }
 
-// Waveform Animation
 function startWaveformAnimation() {
     if (!elements.waveformCanvas) return;
     const ctx = elements.waveformCanvas.getContext('2d');
-    const bufferLength = 64;
-    const dataArray = new Uint8Array(bufferLength);
+    const len = 64, data = new Uint8Array(len);
     
     const draw = () => {
         state.waveformAnimationId = requestAnimationFrame(draw);
-        for (let i = 0; i < bufferLength; i++) dataArray[i] = Math.random() * 100 + 50;
-        
-        const { width, height } = elements.waveformCanvas;
-        ctx.clearRect(0, 0, width, height);
-        const barWidth = (width / bufferLength) * 2.5;
+        for (let i = 0; i < len; i++) data[i] = Math.random() * 100 + 50;
+        const { width: w, height: h } = elements.waveformCanvas;
+        ctx.clearRect(0, 0, w, h);
+        const bw = (w / len) * 2.5;
         let x = 0;
-        
-        for (let i = 0; i < bufferLength; i++) {
-            const barHeight = (dataArray[i] / 255) * height * 0.8;
-            const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
-            gradient.addColorStop(0, '#d4846a');
-            gradient.addColorStop(1, '#f7ce68');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(x, height - barHeight, barWidth - 1, barHeight);
-            x += barWidth;
+        for (let i = 0; i < len; i++) {
+            const bh = (data[i] / 255) * h * 0.8;
+            const g = ctx.createLinearGradient(0, h, 0, h - bh);
+            g.addColorStop(0, '#d4846a');
+            g.addColorStop(1, '#f7ce68');
+            ctx.fillStyle = g;
+            ctx.fillRect(x, h - bh, bw - 1, bh);
+            x += bw;
         }
     };
-    
     elements.waveformCanvas.classList.add('active');
     draw();
 }
@@ -291,284 +258,273 @@ function stopWaveformAnimation() {
     }
 }
 
-// Video Controls
-function switchVideo(videoElement, loop = false) {
+function switchVideo(el, loop = false) {
     [elements.videoGreeting, elements.videoIdle, elements.videoGoodbye].forEach(v => {
-        if (v !== videoElement) { v.classList.remove('active'); v.pause(); }
+        if (v && v !== el) { v.classList.remove('active'); v.pause(); }
     });
-    videoElement.classList.add('active');
-    videoElement.loop = loop;
-    videoElement.muted = true;
-    videoElement.currentTime = 0;
-    videoElement.play().catch(() => document.addEventListener('click', () => videoElement.play(), { once: true }));
-    state.currentVideo = videoElement;
+    if (!el) return;
+    el.classList.add('active');
+    el.loop = loop;
+    el.muted = true;
+    el.currentTime = 0;
+    el.play().catch(() => document.addEventListener('click', () => el.play(), { once: true }));
+    state.currentVideo = el;
 }
 
 function playGreeting() {
-    const greetingMessage = getGreetingMessage();
-    const greetingText = document.querySelector('.greeting-text');
-    if (greetingText) greetingText.textContent = greetingMessage;
-    
-    const startVideo = () => {
-        switchVideo(elements.videoGreeting, true);
-        setTimeout(() => displayResponse(greetingMessage), 500);
-    };
-    
-    if (elements.videoGreeting.readyState >= 3) startVideo();
-    else elements.videoGreeting.addEventListener('canplay', startVideo, { once: true });
+    const msg = getGreetingMessage();
+    const gt = document.querySelector('.greeting-text');
+    if (gt) gt.textContent = msg;
+    const start = () => { switchVideo(elements.videoGreeting, true); setTimeout(() => displayResponse(msg), 500); };
+    elements.videoGreeting?.readyState >= 3 ? start() : elements.videoGreeting?.addEventListener('canplay', start, { once: true });
 }
-
-function playIdle() { switchVideo(elements.videoIdle, true); }
-function playGoodbye() { switchVideo(elements.videoGoodbye, false); displayResponse("Thank you for visiting. Goodbye!"); }
 
 function preloadVideos() {
-    [elements.videoGreeting, elements.videoIdle, elements.videoGoodbye].forEach(v => { v.muted = true; v.volume = 0; v.load(); });
+    [elements.videoGreeting, elements.videoIdle, elements.videoGoodbye].forEach(v => {
+        if (v) { v.muted = true; v.volume = 0; v.load(); }
+    });
 }
 
-// Event Listeners
 function setupEventListeners() {
-    elements.sendBtn.addEventListener('click', handleSend);
-    elements.userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
-    elements.voiceToggle.addEventListener('click', toggleVoice);
+    elements.sendBtn?.addEventListener('click', handleSend);
+    elements.userInput?.addEventListener('keypress', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
+    elements.voiceToggle?.addEventListener('click', toggleVoice);
     elements.micBtn?.addEventListener('click', () => state.isListening ? stopListening() : startListening());
-    
-    document.querySelectorAll('.suggestion-btn').forEach(btn => {
-        btn.addEventListener('click', () => { elements.userInput.value = btn.getAttribute('data-query'); handleSend(); });
-    });
-    
-    document.querySelectorAll('.quick-action-btn[data-query]').forEach(btn => {
-        btn.addEventListener('click', () => { elements.userInput.value = btn.getAttribute('data-query'); handleSend(); });
-    });
+    $$('.suggestion-btn').forEach(btn => btn.addEventListener('click', () => { if (elements.userInput) elements.userInput.value = btn.getAttribute('data-query'); handleSend(); }));
+    $$('.quick-action-btn[data-query]').forEach(btn => btn.addEventListener('click', () => { if (elements.userInput) elements.userInput.value = btn.getAttribute('data-query'); handleSend(); }));
 }
 
 function handlePageLeave() {
-    document.querySelector('.close-btn').addEventListener('click', (e) => {
+    document.querySelector('.close-btn')?.addEventListener('click', e => {
         e.preventDefault();
-        if (!state.hasPlayedGoodbye) { state.hasPlayedGoodbye = true; playGoodbye(); setTimeout(() => window.location.href = 'index.html', 2500); }
+        if (!state.hasPlayedGoodbye) {
+            state.hasPlayedGoodbye = true;
+            switchVideo(elements.videoGoodbye, false);
+            displayResponse("Thank you for visiting. Goodbye!");
+            setTimeout(() => window.location.href = 'index.html', 2500);
+        }
     });
-    
     const cleanup = () => { speechSynthesis.cancel(); stopWaveformAnimation(); };
     window.addEventListener('pagehide', cleanup);
     window.addEventListener('beforeunload', () => speechSynthesis.cancel());
     document.addEventListener('visibilitychange', () => { if (document.hidden) cleanup(); });
 }
 
-// Message Handling
+let lastRequestTime = 0;
+const REQUEST_COOLDOWN = 2000;
+
 async function handleSend() {
-    const message = elements.userInput.value.trim();
-    if (!message) return;
-    if (state.isProcessing) {
-        elements.userInput.value = '';
-        return;
+    const msg = elements.userInput?.value.trim();
+    if (!msg) return;
+    
+    const now = Date.now();
+    if (now - lastRequestTime < REQUEST_COOLDOWN) return;
+    lastRequestTime = now;
+    
+    if (state.typingTimeoutId) {
+        clearTimeout(state.typingTimeoutId);
+        state.typingTimeoutId = null;
+        if (state.currentTypingText) finishTyping(state.currentTypingText);
     }
     
+    if (state.isProcessing) { if (elements.userInput) elements.userInput.value = ''; return; }
+    
     state.isProcessing = true;
-    elements.sendBtn.disabled = true;
-    elements.userInput.value = '';
-    elements.userInput.blur();
-    elements.userInput.focus();
+    if (elements.sendBtn) elements.sendBtn.disabled = true;
+    if (elements.userInput) { elements.userInput.value = ''; elements.userInput.blur(); elements.userInput.focus(); }
     state.messageCount++;
 
     if (state.messageCount === 1) {
-        const currentGreeting = elements.responseText.textContent;
-        if (currentGreeting) { addToChatHistory(currentGreeting, false); state.lastAiResponse = currentGreeting; }
         switchToHorizontalLayout();
         if (state.currentVideo === elements.videoGreeting) switchVideo(elements.videoIdle, true);
-    } else if (state.lastAiResponse) {
-        addToChatHistory(state.lastAiResponse, false);
+        const greetingText = elements.responseText?.textContent;
+        if (greetingText) addToChatHistory(greetingText, false);
+        if (elements.responseArea) elements.responseArea.style.display = 'none';
     }
 
-    addToChatHistory(message, true);
-    elements.suggestions.style.display = 'none';
-    document.getElementById('quick-actions')?.style.setProperty('display', 'none');
+    addToChatHistory(msg, true);
+    if (elements.suggestions) elements.suggestions.style.display = 'none';
+    state.pendingToolCall = null;
 
-    const easterEggResponse = checkEasterEgg(message);
-    if (easterEggResponse) {
+    const egg = checkEasterEgg(msg);
+    if (egg) {
         setThinkingState(true);
-        await delay(800);
+        await new Promise(r => setTimeout(r, 800));
         setThinkingState(false);
-        displayResponse(easterEggResponse, []);
-        state.lastAiResponse = easterEggResponse;
+        displayResponse(egg, []);
         state.isProcessing = false;
-        elements.sendBtn.disabled = false;
+        if (elements.sendBtn) elements.sendBtn.disabled = false;
         return;
     }
 
     setThinkingState(true);
-    state.conversationHistory.push({ role: 'user', content: message });
-    
-    // Clear pending tool if user types a new message instead of clicking approval
-    if (state.pendingToolCall) {
-        document.querySelector('.tool-approval-buttons')?.remove();
-        state.pendingToolCall = null;
-    }
+    state.conversationHistory.push({ role: 'user', content: msg });
 
     try {
-        const response = await fetch('/.netlify/functions/chat', {
+        const res = await fetch('/api/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, history: state.conversationHistory.slice(-10) })
+            body: JSON.stringify({ message: msg, history: state.conversationHistory.slice(-4) })
         });
         
-        if (!response.ok) throw new Error('Request failed');
-        const data = await response.json();
-
+        if (!res.ok) throw new Error('Request failed');
+        const data = await res.json();
         setThinkingState(false);
 
         if (data.toolCall?.requiresApproval) {
             state.pendingToolCall = data.toolCall;
-            displayResponse(data.response, []);
-            state.lastAiResponse = data.response;
             state.conversationHistory.push({ role: 'assistant', content: data.response });
-            addApprovalButtons(data.toolCall);
+            displayResponse(data.response, [], () => addApprovalButtons(data.toolCall));
         } else {
-            const botResponse = data.response || "I apologize, but I could not process that request.";
-            state.conversationHistory.push({ role: 'assistant', content: botResponse });
-            displayResponse(botResponse, getContextualActions(message, botResponse));
-            if (data.schedulingUrl) addSchedulingCard(data.schedulingUrl, data.eventName, data.duration);
-            state.lastAiResponse = botResponse;
+            const resp = data.response || "I couldn't process that request.";
+            state.conversationHistory.push({ role: 'assistant', content: resp });
+            displayResponse(resp, getContextualActions(msg, resp), () => {
+                if (data.schedulingUrl) addSchedulingCard(data.schedulingUrl, data.eventName, data.duration);
+            });
         }
-    } catch (error) {
+    } catch {
         setThinkingState(false);
-        const errorMsg = "I am having trouble connecting. Please try again or reach out via email at dishasawantt@gmail.com.";
-        displayResponse(errorMsg, ['email']);
-        state.lastAiResponse = errorMsg;
+        displayResponse("I'm having trouble connecting. Please try again or email dishasawantt@gmail.com.", ['email']);
     } finally {
         state.isProcessing = false;
-        elements.sendBtn.disabled = false;
-        elements.userInput.focus();
+        if (elements.sendBtn) elements.sendBtn.disabled = false;
+        elements.userInput?.focus();
     }
 }
 
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-function checkEasterEgg(message) {
-    const lower = message.toLowerCase();
-    return easterEggs.triggers.some(t => lower.includes(t)) ? easterEggs.responses[Math.floor(Math.random() * easterEggs.responses.length)] : null;
+function checkEasterEgg(msg) {
+    const lower = msg.toLowerCase();
+    return CONFIG.easterEggs.triggers.some(t => lower.includes(t)) 
+        ? CONFIG.easterEggs.responses[Math.floor(Math.random() * CONFIG.easterEggs.responses.length)] 
+        : null;
 }
 
-function getContextualActions(userMessage, botResponse) {
-    const lower = (userMessage + ' ' + botResponse).toLowerCase();
-    const actionMap = { 
-        projects: ['project', 'brain tumor', 'emotion ai', 'credit default', 'mathui', 'voiceui', 'quadrotor', 'wordecho'],
-        github: ['github', 'code', 'repository'],
-        resume: ['resume', 'cv', 'hire'], 
-        email: ['contact', 'reach', 'connect', 'interview'], 
-        linkedin: ['linkedin', 'network'] 
-    };
+function getContextualActions(userMsg, botResp) {
+    if (/what's your (name|email)|need your|provide|placeholder/i.test(botResp)) return [];
+    const lower = (userMsg + ' ' + botResp).toLowerCase();
     const actions = [];
-    for (const [action, keywords] of Object.entries(actionMap)) {
+    for (const [action, keywords] of Object.entries(CONFIG.actionKeywords)) {
         if (keywords.some(k => lower.includes(k))) actions.push(action);
     }
     return [...new Set(actions)].slice(0, 2);
 }
 
-// UI State
 function setThinkingState(thinking) {
     if (thinking) {
-        elements.avatarName.classList.add('thinking');
-        elements.responseText.innerHTML = '<div class="thinking-indicator"><span>Thinking</span><div class="thinking-dots"><span></span><span></span><span></span></div></div>';
-        playIdle();
+        elements.avatarName?.classList.add('thinking');
+        if (elements.responseText) elements.responseText.innerHTML = '<div class="thinking-indicator"><span>Thinking</span><div class="thinking-dots"><span></span><span></span><span></span></div></div>';
+        switchVideo(elements.videoIdle, true);
     } else {
-        elements.avatarName.classList.remove('thinking');
+        elements.avatarName?.classList.remove('thinking');
     }
 }
 
-function displayResponse(text, actionKeys = []) {
+function displayResponse(text, actionKeys = [], onComplete = null) {
     if (state.voiceEnabled) speak(text);
-    typeText(text, () => { if (actionKeys.length) showQuickActions(actionKeys); });
-    elements.responseArea.scrollTop = 0;
+    if (elements.responseArea) elements.responseArea.style.display = 'block';
+    state.currentTypingText = text;
+    typeText(text, () => {
+        state.currentTypingText = null;
+        if (state.messageCount > 0) {
+            addToChatHistory(text, false);
+            if (elements.responseArea) elements.responseArea.style.display = 'none';
+        }
+        if (actionKeys.length) showQuickActions(actionKeys);
+        if (onComplete) onComplete();
+    });
 }
 
-function showQuickActions(actionKeys) {
-    document.querySelector('.quick-actions')?.remove();
-    const container = document.createElement('div');
-    container.className = 'quick-actions';
-    
-    actionKeys.forEach(key => {
-        const action = quickActions[key];
+function finishTyping(text) {
+    state.currentTypingText = null;
+    addToChatHistory(text, false);
+    if (elements.responseArea) elements.responseArea.style.display = 'none';
+    if (elements.responseText) elements.responseText.innerHTML = '';
+}
+
+function showQuickActions(keys) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'chat-message ai quick-actions-wrapper';
+    const div = document.createElement('div');
+    div.className = 'quick-actions';
+    keys.forEach(key => {
+        const action = CONFIG.quickActions[key];
         if (action) {
-            const link = document.createElement('a');
-            link.href = action.href;
-            link.className = 'quick-action-btn';
-            link.target = action.href.startsWith('http') ? '_blank' : '_self';
-            link.rel = 'noopener';
-            const iconClass = ['fa-download', 'fa-envelope', 'fa-code'].includes(action.icon) ? 'fas' : 'fab';
-            link.innerHTML = `<i class="${iconClass} ${action.icon}"></i> ${action.text}`;
-            container.appendChild(link);
+            const a = document.createElement('a');
+            a.href = action.href;
+            a.className = 'quick-action-btn';
+            a.target = action.href.startsWith('http') ? '_blank' : '_self';
+            a.rel = 'noopener';
+            a.innerHTML = `<i class="${action.brand ? 'fab' : 'fas'} ${action.icon}"></i> ${action.text}`;
+            div.appendChild(a);
         }
     });
-    
-    document.querySelector('.chat-section').insertBefore(container, document.querySelector('.input-area'));
-    requestAnimationFrame(() => container.classList.add('visible'));
+    wrapper.appendChild(div);
+    elements.chatHistory?.appendChild(wrapper);
+    scrollToBottom();
+    requestAnimationFrame(() => div.classList.add('visible'));
 }
 
 function typeText(text, onComplete = null) {
+    if (state.typingTimeoutId) { clearTimeout(state.typingTimeoutId); state.typingTimeoutId = null; }
+    if (!elements.responseText) { if (onComplete) onComplete(); return; }
+    
     elements.responseText.innerHTML = '<span class="cursor">|</span>';
-    document.querySelector('.quick-actions')?.remove();
     const cursor = elements.responseText.querySelector('.cursor');
     const chars = text.split('');
     let i = 0;
     
-    const typeChar = () => {
+    const type = () => {
         if (i < chars.length) {
-            const char = chars[i];
+            const c = chars[i];
             const span = document.createElement('span');
             span.className = 'char';
-            span.innerHTML = char === '\n' ? '<br>' : char === ' ' ? ' ' : char;
+            span.innerHTML = c === '\n' ? '<br>' : c === ' ' ? ' ' : c;
             elements.responseText.insertBefore(span, cursor);
             i++;
-            elements.responseArea.scrollTop = elements.responseArea.scrollHeight;
-            setTimeout(typeChar, '.!?'.includes(char) ? 150 : ',;:'.includes(char) ? 80 : 25);
+            if (elements.responseArea) elements.responseArea.scrollTop = elements.responseArea.scrollHeight;
+            state.typingTimeoutId = setTimeout(type, '.!?'.includes(c) ? 80 : ',;:'.includes(c) ? 40 : 12);
         } else {
-            cursor.remove();
+            cursor?.remove();
+            state.typingTimeoutId = null;
             if (onComplete) onComplete();
         }
     };
-    typeChar();
+    type();
 }
 
-// Tool Approval UI
 function addApprovalButtons(toolCall) {
-    document.querySelector('.tool-approval-buttons')?.remove();
+    const wrapper = document.createElement('div');
+    wrapper.className = 'chat-message ai';
+    const div = document.createElement('div');
+    div.className = 'tool-approval-buttons';
     
-    const approvalDiv = document.createElement('div');
-    approvalDiv.className = 'tool-approval-buttons';
-    
-    const buttonLabels = {
-        send_documents: '<i class="fas fa-file-pdf"></i> Send Documents',
-        schedule_meeting: '<i class="fas fa-calendar-alt"></i> Schedule Meeting'
-    };
+    const labels = { send_documents: '<i class="fas fa-file-pdf"></i> Send Documents', schedule_meeting: '<i class="fas fa-calendar-alt"></i> Schedule Meeting' };
     
     const approveBtn = document.createElement('button');
     approveBtn.className = 'btn btn-approve';
-    approveBtn.innerHTML = buttonLabels[toolCall.function] || '<i class="fas fa-check"></i> Proceed';
+    approveBtn.innerHTML = labels[toolCall.function] || '<i class="fas fa-check"></i> Proceed';
     approveBtn.onclick = async () => {
-        approvalDiv.remove();
+        const tool = state.pendingToolCall;
+        if (!tool) return;
+        div.innerHTML = '<span style="opacity:0.6"><i class="fas fa-spinner fa-spin"></i> Processing...</span>';
         setThinkingState(true);
-        
+        state.pendingToolCall = null;
         try {
-            const response = await fetch('/.netlify/functions/chat', {
+            const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: '', history: state.conversationHistory.slice(-10), toolExecutionData: state.pendingToolCall })
+                body: JSON.stringify({ message: '', history: state.conversationHistory.slice(-4), toolExecutionData: tool })
             });
-            
-            if (!response.ok) throw new Error('Request failed');
-            const data = await response.json();
-            
-            state.pendingToolCall = null;
+            if (!res.ok) throw new Error();
+            const data = await res.json();
             setThinkingState(false);
-            displayResponse(data.response, []);
-            
-            if (data.schedulingUrl) addSchedulingCard(data.schedulingUrl, data.eventName, data.duration);
-            
-            state.lastAiResponse = data.response;
             state.conversationHistory.push({ role: 'assistant', content: data.response });
-        } catch (error) {
+            displayResponse(data.response, [], () => {
+                if (data.schedulingUrl) addSchedulingCard(data.schedulingUrl, data.eventName, data.duration);
+            });
+        } catch {
             setThinkingState(false);
             displayResponse("I had trouble with that. Please try again.", []);
-            state.pendingToolCall = null;
         }
     };
     
@@ -577,44 +533,42 @@ function addApprovalButtons(toolCall) {
     cancelBtn.innerHTML = '<i class="fas fa-times"></i> Cancel';
     cancelBtn.onclick = () => {
         state.pendingToolCall = null;
-        approvalDiv.remove();
-        const cancelMsg = "No problem! Let me know if you need anything else.";
-        addToChatHistory(cancelMsg, false);
-        state.lastAiResponse = cancelMsg;
-        state.conversationHistory.push({ role: 'assistant', content: cancelMsg });
+        div.innerHTML = '<span style="opacity:0.6">Cancelled</span>';
+        const msg = "No problem! Let me know if you need anything else.";
+        addToChatHistory(msg, false);
+        state.conversationHistory.push({ role: 'assistant', content: msg });
     };
     
-    approvalDiv.appendChild(approveBtn);
-    approvalDiv.appendChild(cancelBtn);
-    document.querySelector('.chat-section').insertBefore(approvalDiv, document.querySelector('.input-area'));
+    div.appendChild(approveBtn);
+    div.appendChild(cancelBtn);
+    wrapper.appendChild(div);
+    elements.chatHistory?.appendChild(wrapper);
+    scrollToBottom();
 }
 
 function addSchedulingCard(url, eventName, duration) {
-    document.querySelector('.scheduling-card')?.remove();
-    
-    const cardDiv = document.createElement('div');
-    cardDiv.className = 'scheduling-card';
-    const durationText = duration ? `${duration} minutes` : '';
-    
-    cardDiv.innerHTML = `
-        <div class="scheduling-card-header"><i class="fas fa-calendar-alt"></i><h3>${eventName || 'Schedule a Meeting'}</h3></div>
-        ${durationText ? `<p class="scheduling-duration">${durationText}</p>` : ''}
-        <a href="${url}" target="_blank" rel="noopener noreferrer" class="scheduling-link-btn"><i class="fas fa-external-link-alt"></i> Open Calendar</a>
-        <button class="copy-link-btn" onclick="copySchedulingLink('${url}')"><i class="fas fa-copy"></i> Copy Link</button>
+    const card = document.createElement('div');
+    card.className = 'chat-message ai scheduling-card';
+    card.innerHTML = `
+        <div class="message-content">
+            <div class="scheduling-card-header"><i class="fas fa-calendar-alt"></i><h3>${eventName || 'Schedule a Meeting'}</h3></div>
+            ${duration ? `<p class="scheduling-duration">${duration} minutes</p>` : ''}
+            <a href="${url}" target="_blank" rel="noopener" class="scheduling-link-btn"><i class="fas fa-external-link-alt"></i> Open Calendar</a>
+            <button class="copy-link-btn" onclick="copySchedulingLink('${url}')"><i class="fas fa-copy"></i> Copy Link</button>
+        </div>
     `;
-    
-    document.querySelector('.chat-section').insertBefore(cardDiv, document.querySelector('.input-area'));
-    setTimeout(() => cardDiv.classList.add('visible'), 100);
+    elements.chatHistory?.appendChild(card);
+    scrollToBottom();
+    setTimeout(() => card.classList.add('visible'), 100);
 }
 
-function copySchedulingLink(url) {
+window.copySchedulingLink = url => {
     navigator.clipboard.writeText(url).then(() => {
         const btn = document.querySelector('.copy-link-btn');
-        const originalHTML = btn.innerHTML;
+        if (!btn) return;
+        const orig = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
         btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-        setTimeout(() => { btn.innerHTML = originalHTML; btn.style.background = ''; }, 2000);
+        setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 2000);
     }).catch(() => {});
-}
-
-window.copySchedulingLink = copySchedulingLink;
+};

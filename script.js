@@ -6,9 +6,7 @@ window.addEventListener('load', () => {
 
 const scrollProgress = document.getElementById('scroll-progress');
 const updateScrollProgress = () => {
-    if (!scrollProgress) return;
-    const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-    scrollProgress.style.width = scrollPercent + '%';
+    if (scrollProgress) scrollProgress.style.width = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100 + '%';
 };
 
 const canvas = document.getElementById('particles-canvas');
@@ -17,10 +15,7 @@ if (canvas) {
     let particles = [];
     let mouseParticle = { x: 0, y: 0 };
     
-    const resizeCanvas = () => {
-        canvas.width = canvas.parentElement.offsetWidth;
-        canvas.height = canvas.parentElement.offsetHeight;
-    };
+    const resizeCanvas = () => { canvas.width = canvas.parentElement.offsetWidth; canvas.height = canvas.parentElement.offsetHeight; };
     
     class Particle {
         constructor() { this.reset(); }
@@ -36,12 +31,8 @@ if (canvas) {
         update() {
             this.x += this.speedX;
             this.y += this.speedY;
-            const dx = mouseParticle.x - this.x;
-            const dy = mouseParticle.y - this.y;
-            if (Math.sqrt(dx * dx + dy * dy) < 100) {
-                this.x -= dx * 0.02;
-                this.y -= dy * 0.02;
-            }
+            const dx = mouseParticle.x - this.x, dy = mouseParticle.y - this.y;
+            if (Math.sqrt(dx * dx + dy * dy) < 100) { this.x -= dx * 0.02; this.y -= dy * 0.02; }
             if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
         }
         draw() {
@@ -52,16 +43,12 @@ if (canvas) {
         }
     }
     
-    const initParticles = () => {
-        particles = [];
-        for (let i = 0; i < 80; i++) particles.push(new Particle());
-    };
-
+    const initParticles = () => { particles = Array.from({ length: 80 }, () => new Particle()); };
+    
     const connectParticles = () => {
         for (let i = 0; i < particles.length; i++) {
             for (let j = i + 1; j < particles.length; j++) {
-                const dx = particles[i].x - particles[j].x;
-                const dy = particles[i].y - particles[j].y;
+                const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
                 if (dist < 120) {
                     ctx.beginPath();
@@ -82,7 +69,7 @@ if (canvas) {
         requestAnimationFrame(animateParticles);
     };
     
-    canvas.addEventListener('mousemove', (e) => {
+    canvas.addEventListener('mousemove', e => {
         const rect = canvas.getBoundingClientRect();
         mouseParticle.x = e.clientX - rect.left;
         mouseParticle.y = e.clientY - rect.top;
@@ -94,33 +81,27 @@ if (canvas) {
     window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
 }
 
+const addTiltEffect = (selector, intensity = 15) => {
+    document.querySelectorAll(selector).forEach(el => {
+        el.addEventListener('mousemove', e => {
+            const rect = el.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            el.style.transform = `perspective(1000px) rotateX(${y * intensity}deg) rotateY(${x * -intensity}deg) translateZ(10px)`;
+        });
+        el.addEventListener('mouseleave', () => el.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)');
+    });
+};
+
+addTiltEffect('.project-card');
+addTiltEffect('.certification-card', 10);
+
 document.querySelectorAll('.magnetic-btn').forEach(btn => {
-    btn.addEventListener('mousemove', (e) => {
+    btn.addEventListener('mousemove', e => {
         const rect = btn.getBoundingClientRect();
         btn.style.transform = `translate(${(e.clientX - rect.left - rect.width / 2) * 0.3}px, ${(e.clientY - rect.top - rect.height / 2) * 0.3}px)`;
     });
     btn.addEventListener('mouseleave', () => btn.style.transform = 'translate(0, 0)');
-});
-
-const projectCards = document.querySelectorAll('.project-card');
-projectCards.forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;
-        const y = (e.clientY - rect.top) / rect.height;
-        card.style.transform = `perspective(1000px) rotateX(${(y - 0.5) * 15}deg) rotateY(${(x - 0.5) * -15}deg) translateZ(10px)`;
-    });
-    card.addEventListener('mouseleave', () => card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)');
-});
-
-document.querySelectorAll('.certification-card').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;
-        const y = (e.clientY - rect.top) / rect.height;
-        card.style.transform = `perspective(1000px) rotateX(${(y - 0.5) * 10}deg) rotateY(${(x - 0.5) * -10}deg) translateY(-15px)`;
-    });
-    card.addEventListener('mouseleave', () => card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateY(0)');
 });
 
 const animateSkillBars = () => {
@@ -132,60 +113,29 @@ const animateSkillBars = () => {
 
 const testimonialCards = document.querySelectorAll('.testimonial-card');
 const dots = document.querySelectorAll('.testimonial-dots .dot');
-const prevBtn = document.querySelector('.testimonial-btn.prev');
-const nextBtn = document.querySelector('.testimonial-btn.next');
-let currentTestimonial = 0;
-let isPaused = false;
+let currentTestimonial = 0, isPaused = false;
 
-const showTestimonial = (index) => {
+const showTestimonial = index => {
     testimonialCards.forEach((card, i) => {
-        card.classList.remove('active');
-        if (dots[i]) dots[i].classList.remove('active');
+        card.classList.toggle('active', i === index);
+        if (dots[i]) dots[i].classList.toggle('active', i === index);
     });
-    testimonialCards[index].classList.add('active');
-    if (dots[index]) dots[index].classList.add('active');
 };
 
 if (testimonialCards.length > 1) {
-        setInterval(() => {
-            if (!isPaused) {
-                currentTestimonial = (currentTestimonial + 1) % testimonialCards.length;
-                showTestimonial(currentTestimonial);
-            }
-        }, 4000);
-    
-    if (prevBtn) prevBtn.addEventListener('click', () => {
-            currentTestimonial = (currentTestimonial - 1 + testimonialCards.length) % testimonialCards.length;
-            showTestimonial(currentTestimonial);
-        });
-    
-    if (nextBtn) nextBtn.addEventListener('click', () => {
-            currentTestimonial = (currentTestimonial + 1) % testimonialCards.length;
-            showTestimonial(currentTestimonial);
-        });
-    
-    dots.forEach((dot, index) => dot.addEventListener('click', () => {
-            currentTestimonial = index;
-            showTestimonial(currentTestimonial);
-    }));
-    
-    const testimonialSection = document.querySelector('.testimonials');
-    if (testimonialSection) {
-        testimonialSection.addEventListener('mouseenter', () => isPaused = true);
-        testimonialSection.addEventListener('mouseleave', () => isPaused = false);
-    }
+    setInterval(() => { if (!isPaused) { currentTestimonial = (currentTestimonial + 1) % testimonialCards.length; showTestimonial(currentTestimonial); } }, 4000);
+    document.querySelector('.testimonial-btn.prev')?.addEventListener('click', () => { currentTestimonial = (currentTestimonial - 1 + testimonialCards.length) % testimonialCards.length; showTestimonial(currentTestimonial); });
+    document.querySelector('.testimonial-btn.next')?.addEventListener('click', () => { currentTestimonial = (currentTestimonial + 1) % testimonialCards.length; showTestimonial(currentTestimonial); });
+    dots.forEach((dot, i) => dot.addEventListener('click', () => { currentTestimonial = i; showTestimonial(i); }));
+    const ts = document.querySelector('.testimonials');
+    if (ts) { ts.addEventListener('mouseenter', () => isPaused = true); ts.addEventListener('mouseleave', () => isPaused = false); }
 }
 
 const skillsSection = document.querySelector('.skills');
 if (skillsSection) {
-const skillsObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            animateSkillBars();
-            skillsObserver.unobserve(entry.target);
-        }
-    });
-}, { threshold: 0.3 });
+    const skillsObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => { if (entry.isIntersecting) { animateSkillBars(); skillsObserver.unobserve(entry.target); } });
+    }, { threshold: 0.3 });
     skillsObserver.observe(skillsSection);
 }
 
@@ -196,19 +146,18 @@ const html = document.documentElement;
 const backToTop = document.getElementById('back-to-top');
 
 const initTheme = () => {
-    const savedTheme = localStorage.getItem('theme');
+    const saved = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (savedTheme) html.setAttribute('data-theme', savedTheme);
-    else if (prefersDark) html.setAttribute('data-theme', 'dark');
+    html.setAttribute('data-theme', saved || (prefersDark ? 'dark' : 'light'));
     updateThemeIcon();
 };
 
 const updateThemeIcon = () => {
-    const icon = themeToggle.querySelector('i');
-    icon.className = html.getAttribute('data-theme') === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    const icon = themeToggle?.querySelector('i');
+    if (icon) icon.className = html.getAttribute('data-theme') === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 };
 
-themeToggle.addEventListener('click', () => {
+themeToggle?.addEventListener('click', () => {
     const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     html.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
@@ -218,47 +167,37 @@ themeToggle.addEventListener('click', () => {
 
 initTheme();
 
-const toggleBackToTop = () => {
-    backToTop.classList.toggle('visible', window.scrollY > 500);
-};
+backToTop?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-
+const projectCards = document.querySelectorAll('.project-card');
 document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         const filter = btn.getAttribute('data-filter');
-        projectCards.forEach((card, index) => {
-            const category = card.getAttribute('data-category');
-            if (filter === 'all' || category === filter) {
-                card.classList.remove('hidden');
-                card.style.animation = `fadeInUp 0.5s ease ${index * 0.1}s forwards`;
-            } else {
-                card.classList.add('hidden');
-            }
+        projectCards.forEach((card, i) => {
+            const match = filter === 'all' || card.getAttribute('data-category') === filter;
+            card.classList.toggle('hidden', !match);
+            if (match) card.style.animation = `fadeInUp 0.5s ease ${i * 0.1}s forwards`;
         });
     });
 });
 
-navToggle.addEventListener('click', () => {
+navToggle?.addEventListener('click', () => {
     navMenu.classList.toggle('active');
     const bars = navToggle.querySelectorAll('.bar');
-    bars.forEach((bar, index) => {
+    bars.forEach((bar, i) => {
         if (navMenu.classList.contains('active')) {
-            bar.style.transform = index === 0 ? 'rotate(-45deg) translate(-5px, 6px)' : index === 2 ? 'rotate(45deg) translate(-5px, -6px)' : 'none';
-            bar.style.opacity = index === 1 ? '0' : '1';
-        } else {
-            bar.style.transform = 'none';
-            bar.style.opacity = '1';
-        }
+            bar.style.transform = i === 0 ? 'rotate(-45deg) translate(-5px, 6px)' : i === 2 ? 'rotate(45deg) translate(-5px, -6px)' : 'none';
+            bar.style.opacity = i === 1 ? '0' : '1';
+        } else { bar.style.transform = 'none'; bar.style.opacity = '1'; }
     });
 });
 
 document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', () => {
-        navMenu.classList.remove('active');
-        navToggle.querySelectorAll('.bar').forEach(bar => { bar.style.transform = 'none'; bar.style.opacity = '1'; });
+        navMenu?.classList.remove('active');
+        navToggle?.querySelectorAll('.bar').forEach(bar => { bar.style.transform = 'none'; bar.style.opacity = '1'; });
     });
 });
 
@@ -266,43 +205,41 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function(e) {
         e.preventDefault();
         const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            window.scrollTo({ top: target.getBoundingClientRect().top + window.pageYOffset - 80, behavior: 'smooth' });
-        }
+        if (target) window.scrollTo({ top: target.getBoundingClientRect().top + window.pageYOffset - 80, behavior: 'smooth' });
     });
 });
 
 const updateActiveNavLink = () => {
     const sections = document.querySelectorAll('section[id]');
-    const navLinks = document.querySelectorAll('.nav-link');
     let current = '';
     sections.forEach(section => { if (section.getBoundingClientRect().top <= 100) current = section.getAttribute('id'); });
-    navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === `#${current}`) link.classList.add('active');
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.toggle('active', link.getAttribute('href') === `#${current}`);
     });
 };
 
 const updateNavbarBackground = () => {
     const navbar = document.querySelector('.navbar');
+    if (!navbar) return;
     const isDark = html.getAttribute('data-theme') === 'dark';
-    navbar.style.background = window.scrollY > 100 
+    const scrolled = window.scrollY > 100;
+    navbar.style.background = scrolled 
         ? (isDark ? 'rgba(26, 22, 20, 0.98)' : 'rgba(253, 249, 245, 0.98)')
         : (isDark ? 'rgba(26, 22, 20, 0.85)' : 'rgba(253, 249, 245, 0.85)');
-    navbar.style.boxShadow = window.scrollY > 100 ? '0 2px 20px rgba(0, 0, 0, 0.15)' : '0 2px 20px rgba(0, 0, 0, 0.1)';
+    navbar.style.boxShadow = scrolled ? '0 2px 20px rgba(0, 0, 0, 0.15)' : '0 2px 20px rgba(0, 0, 0, 0.1)';
 };
 
 window.addEventListener('scroll', () => {
     updateActiveNavLink();
     updateNavbarBackground();
-    toggleBackToTop();
+    backToTop?.classList.toggle('visible', window.scrollY > 500);
     updateScrollProgress();
 });
 
 const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
 let konamiIndex = 0;
 
-document.addEventListener('keydown', (e) => {
+document.addEventListener('keydown', e => {
     if (e.key === konamiCode[konamiIndex]) {
         konamiIndex++;
         if (konamiIndex === konamiCode.length) {
@@ -312,32 +249,24 @@ document.addEventListener('keydown', (e) => {
         }
     } else konamiIndex = 0;
     
-    if (e.key === 'Escape') {
-        if (navMenu.classList.contains('active')) {
+    if (e.key === 'Escape' && navMenu?.classList.contains('active')) {
         navMenu.classList.remove('active');
-            navToggle.querySelectorAll('.bar').forEach(bar => { bar.style.transform = 'none'; bar.style.opacity = '1'; });
-    }
+        navToggle?.querySelectorAll('.bar').forEach(bar => { bar.style.transform = 'none'; bar.style.opacity = '1'; });
     }
 });
 
-const closeEaster = document.getElementById('close-easter');
-if (closeEaster) {
-    closeEaster.addEventListener('click', () => {
-        document.getElementById('easter-egg').classList.remove('active');
-        document.body.style.overflow = '';
-    });
-}
+document.getElementById('close-easter')?.addEventListener('click', () => {
+    document.getElementById('easter-egg')?.classList.remove('active');
+    document.body.style.overflow = '';
+});
 
-const contactForm = document.getElementById('contact-form');
-if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(contactForm);
-        window.location.href = `mailto:dishasawantt@gmail.com?subject=${encodeURIComponent(formData.get('subject'))}&body=${encodeURIComponent(`Name: ${formData.get('name')}\nEmail: ${formData.get('email')}\n\nMessage:\n${formData.get('message')}`)}`;
-        showNotification('Thank you! Your email client should open now.', 'success');
-        contactForm.reset();
-    });
-}
+document.getElementById('contact-form')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const fd = new FormData(this);
+    window.location.href = `mailto:dishasawantt@gmail.com?subject=${encodeURIComponent(fd.get('subject'))}&body=${encodeURIComponent(`Name: ${fd.get('name')}\nEmail: ${fd.get('email')}\n\nMessage:\n${fd.get('message')}`)}`;
+    showNotification('Thank you! Your email client should open now.', 'success');
+    this.reset();
+});
 
 const showNotification = (message, type = 'info') => {
     document.querySelector('.notification')?.remove();
@@ -365,14 +294,14 @@ document.querySelectorAll('.contact-item a').forEach(link => {
     if (link.href.startsWith('mailto:') || link.href.startsWith('tel:')) {
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            const textToCopy = this.href.replace(/^mailto:|^tel:/, '');
-            navigator.clipboard?.writeText(textToCopy).then(() => showNotification(`${textToCopy} copied to clipboard!`, 'success'));
-            setTimeout(() => { window.location.href = this.href; }, 1000);
+            const text = this.href.replace(/^mailto:|^tel:/, '');
+            navigator.clipboard?.writeText(text).then(() => showNotification(`${text} copied!`, 'success'));
+            setTimeout(() => window.location.href = this.href, 1000);
         });
     }
 });
 
-const observer = new IntersectionObserver((entries) => {
+const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('animate'); });
 }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
@@ -388,8 +317,7 @@ document.querySelectorAll('.skill-bar-item').forEach(item => {
     item.setAttribute('role', 'progressbar');
     const progress = item.querySelector('.skill-progress');
     if (progress) {
-        const value = progress.getAttribute('data-progress');
-        item.setAttribute('aria-valuenow', value);
+        item.setAttribute('aria-valuenow', progress.getAttribute('data-progress'));
         item.setAttribute('aria-valuemin', '0');
         item.setAttribute('aria-valuemax', '100');
     }
@@ -402,15 +330,14 @@ if (heroImageEl) {
     heroImageEl.addEventListener('mouseleave', () => { isHeroImageHovered = false; heroImageEl.style.transform = 'rotate(-5deg)'; });
 }
 
-window.addEventListener('mousemove', (e) => {
-    const x = e.clientX / window.innerWidth;
-    const y = e.clientY / window.innerHeight;
+window.addEventListener('mousemove', e => {
+    const x = e.clientX / window.innerWidth - 0.5;
+    const y = e.clientY / window.innerHeight - 0.5;
     document.querySelectorAll('.blob').forEach((blob, i) => {
-        const speed = (i + 1) * 20;
-        blob.style.transform = `translate(${(x - 0.5) * speed}px, ${(y - 0.5) * speed}px)`;
+        blob.style.transform = `translate(${x * (i + 1) * 20}px, ${y * (i + 1) * 20}px)`;
     });
     if (heroImageEl && window.scrollY < window.innerHeight && !isHeroImageHovered) {
-        heroImageEl.style.transform = `rotate(-5deg) translate(${(x - 0.5) * 15}px, ${(y - 0.5) * 15}px)`;
+        heroImageEl.style.transform = `rotate(-5deg) translate(${x * 15}px, ${y * 15}px)`;
     }
 });
 
@@ -421,8 +348,8 @@ document.querySelectorAll('.btn').forEach(btn => {
         Object.assign(ripple.style, {
             position: 'absolute', background: 'rgba(255, 255, 255, 0.3)', borderRadius: '50%',
             transform: 'scale(0)', animation: 'ripple 0.6s linear', pointerEvents: 'none',
-            left: `${e.clientX - rect.left}px`, top: `${e.clientY - rect.top}px`,
-            width: '100px', height: '100px', marginLeft: '-50px', marginTop: '-50px'
+            left: `${e.clientX - rect.left - 50}px`, top: `${e.clientY - rect.top - 50}px`,
+            width: '100px', height: '100px'
         });
         this.appendChild(ripple);
         setTimeout(() => ripple.remove(), 600);
@@ -432,4 +359,3 @@ document.querySelectorAll('.btn').forEach(btn => {
 const style = document.createElement('style');
 style.textContent = '@keyframes ripple { to { transform: scale(4); opacity: 0; } }';
 document.head.appendChild(style);
-
