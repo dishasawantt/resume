@@ -108,12 +108,8 @@ const TOOLS = [{
     type: "function",
     function: {
         name: "schedule_meeting",
-        description: "Generate scheduling link. ONLY when user explicitly asks to schedule/book a meeting/call.",
-        parameters: {
-            type: "object",
-            properties: { meetingType: { type: "string", enum: ["quick_chat", "consultation", "interview"] } },
-            required: ["meetingType"]
-        }
+        description: "Generate 45-minute call scheduling link. ONLY when user explicitly asks to schedule/book a meeting/call.",
+        parameters: { type: "object", properties: {}, required: [] }
     }
 }];
 
@@ -180,21 +176,12 @@ function extractNameQuery(msg) {
 
 async function executeTool({ function: fn, arguments: args }, env, requestUrl) {
     if (fn === "schedule_meeting") {
-        const urls = {
-            quick_chat: "https://calendly.com/dishasawantt/15-minute-meeting",
-            consultation: "https://calendly.com/dishasawantt/30min",
-            interview: "https://calendly.com/dishasawantt/45-minute-meeting"
-        };
-        const durations = { quick_chat: 15, consultation: 30, interview: 45 };
-        const names = { quick_chat: "15-Minute Call", consultation: "30-Minute Consultation", interview: "45-Minute Interview" };
-        const type = args.meetingType || "consultation";
-        
         return {
             success: true,
             response: "Here's the scheduling link!",
-            schedulingUrl: urls[type] || urls.consultation,
-            eventName: names[type] || names.consultation,
-            duration: durations[type] || 30
+            schedulingUrl: "https://calendly.com/dishasawantt/45-minute-meeting",
+            eventName: "45-Minute Call",
+            duration: 45
         };
     }
     
