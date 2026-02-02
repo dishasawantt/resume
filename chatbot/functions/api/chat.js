@@ -34,6 +34,36 @@ function searchConnections(connections, nameQuery) {
     
     if (!matches.length) return null;
     
+    // Sort by relevance: exact match > first name match > last name match > contains
+    matches.sort((a, b) => {
+        const aNorm = normalize(a.name);
+        const bNorm = normalize(b.name);
+        const aParts = a.name.split(/\s+/);
+        const bParts = b.name.split(/\s+/);
+        const aFirst = normalize(aParts[0] || '');
+        const bFirst = normalize(bParts[0] || '');
+        const aLast = normalize(aParts[aParts.length - 1] || '');
+        const bLast = normalize(bParts[bParts.length - 1] || '');
+        
+        // 1. Exact full name match
+        if (aNorm === query && bNorm !== query) return -1;
+        if (bNorm === query && aNorm !== query) return 1;
+        // 2. Exact first name match
+        if (aFirst === query && bFirst !== query) return -1;
+        if (bFirst === query && aFirst !== query) return 1;
+        // 3. First name starts with query
+        if (aFirst.startsWith(query) && !bFirst.startsWith(query)) return -1;
+        if (bFirst.startsWith(query) && !aFirst.startsWith(query)) return 1;
+        // 4. Exact last name match
+        if (aLast === query && bLast !== query) return -1;
+        if (bLast === query && aLast !== query) return 1;
+        // 5. Last name starts with query
+        if (aLast.startsWith(query) && !bLast.startsWith(query)) return -1;
+        if (bLast.startsWith(query) && !aLast.startsWith(query)) return 1;
+        // 6. Position in full name
+        return aNorm.indexOf(query) - bNorm.indexOf(query);
+    });
+    
     return matches.map(c => {
         const sharedCompanies = [];
         const sharedSchools = [];
@@ -78,7 +108,7 @@ SECURITY RULES (HIGHEST PRIORITY):
 CONTACT: dishasawantt@gmail.com | 619-918-7729 | linkedin.com/in/disha-sawant-7877b21b6
 
 BACKGROUND: MS CompE SDSU (2024-26, 3.5) | BS Mumbai (2018-22, 3.7)
-Ema AI Intern: Claims 90%, Zendesk 82% automation | Image Computers: ETL 500K+
+EXPERIENCE: Ema AI Intern (Jun-Aug 2025): Claims 90%, Zendesk 82% automation | Image Computers Data Engineer (Dec 2022-Aug 2024): ETL 500K+ records, predictive maintenance $50K savings
 22 certs (DeepLearning.AI, UCSD Big Data, IBM) | 72 courses
 PROJECTS: Brain Tumor (98%), Emotion AI (87%), Credit Default (82%), MathUI, VoiceUI
 SKILLS: Python, JS, TensorFlow, PyTorch, React, FastAPI, AWS, Docker
@@ -87,7 +117,9 @@ TOOLS:
 - send_documents: ONLY with real name + valid email. Ask if missing.
 - schedule_meeting: ONLY when user explicitly asks to schedule/book.
 
-STYLE: Warm, kind, sweet, conversational. Concise (2-3 sentences), first person, no emojis. Never show JSON. Never invent info.`;
+STYLE: Warm, kind, sweet, conversational. Concise (2-3 sentences), first person, no emojis. Never show JSON. Never invent info.
+
+CONNECTIONS: When asked about people, ONLY state facts from the connection data. NEVER assume family relationships based on shared surnames - same last name does NOT mean relative/sibling/family.`;
 
 const TOOLS = [{
     type: "function",
