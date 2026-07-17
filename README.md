@@ -182,6 +182,21 @@ For questions or issues:
 - Email: dishasawantt@gmail.com
 - LinkedIn: [disha-sawant-7877b21b6](https://linkedin.com/in/disha-sawant-7877b21b6/)
 
+## Documentation
+
+Technical docs for the AI chatbot and agentic AI architecture:
+
+| Document | Description |
+|---|---|
+| [agentic-ai-textbook.md](docs/agentic-ai-textbook.md) | Agentic AI concepts and chatbot design |
+| [agentic-ai-documentation.md](docs/agentic-ai-documentation.md) | Architecture and prompt engineering |
+| [agentic-ai-code-explained.md](docs/agentic-ai-code-explained.md) | Code walkthrough |
+| [chatbot-documentation.md](docs/chatbot-documentation.md) | Chatbot technical reference |
+| [knowledge-base.md](docs/knowledge-base.md) | AI knowledge base content |
+| [next-steps.md](docs/next-steps.md) | Deployment checklist |
+
+**AI Chatbot (separate repo):** https://github.com/dishasawantt/disha-chat · https://disha-chat.pages.dev
+
 ## License
 
 This project is open source and available under the [MIT License](LICENSE).
