@@ -244,7 +244,7 @@ git push origin main
 
 ### Updating Knowledge Base
 
-Edit `/docs/KNOWLEDGE_BASE.md` in the chatbot repo to update what the AI knows about you.
+Edit `docs/knowledge-base.md` in the chatbot repo to update what the AI knows about you.
 
 ---
 
