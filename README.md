@@ -4,7 +4,7 @@ A modern, responsive portfolio website showcasing professional experience, educa
 
 **Live Site:** https://dishasawantt.github.io/resume
 
-**AI Chatbot:** https://disha-chat.pages.dev (separate project)
+**AI Chatbot:** https://disha-chat.pages.dev ([source](https://github.com/dishasawantt/disha-chat))
 
 ## Features
 

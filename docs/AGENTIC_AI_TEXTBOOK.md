@@ -457,7 +457,7 @@ For more sophisticated applications, you might use:
 | **Summarization** | Compress long conversations | Long chats |
 | **Entity Extraction** | Remember key facts about users | Personalization |
 
-We actually use a simple form of RAG for LinkedIn connections:
+We previously used a local LinkedIn connections export for name lookup in the chatbot. That data has been **removed from the public repository** for privacy. The chatbot now directs visitors to LinkedIn for network questions.
 
 ```javascript
 // Search LinkedIn connections and inject results
