@@ -20,8 +20,21 @@ body {
     overflow-x: hidden;
 }
 
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 :root {
     --primary-color: #d4846a;
+    --primary-strong: #9c4a2c;
     --secondary-color: #f4e4bc;
     --accent-color: #e6a756;
     --text-dark: #2d1810;
@@ -39,6 +52,7 @@ body {
 
 [data-theme="dark"] {
     --primary-color: #ffb88c;
+    --primary-strong: #ffb88c;
     --secondary-color: #4a3c30;
     --accent-color: #ffd699;
     --text-dark: #ffffff;
@@ -100,9 +114,13 @@ body {
 [data-theme="dark"] .contact-info p { color: #f0ebe6; }
 
 [data-theme="dark"] .gpa { color: var(--accent-color); }
+[data-theme="dark"] .hero {
+    background: linear-gradient(135deg, #f4e4bc 0%, #d4846a 25%, #e6a756 50%, #d4846a 75%, #f4e4bc 100%);
+    background-size: 400% 400%;
+}
 [data-theme="dark"] .hero-title,
 [data-theme="dark"] .hero-subtitle { color: #5c1a1a; }
-[data-theme="dark"] .hero-description { color: #7a3333; }
+[data-theme="dark"] .hero-description { color: #5c1a1a; }
 [data-theme="dark"] .highlight { 
     background: linear-gradient(90deg, #5c1a1a 0%, #8b2f2f 25%, #a33c3c 50%, #8b2f2f 75%, #5c1a1a 100%);
     background-size: 200% 100%;
@@ -497,7 +515,7 @@ body {
 .hero-description {
     font-size: 1.05rem;
     margin-bottom: 2rem;
-    color: #7a3333;
+    color: #5c1a1a;
     line-height: 1.75;
     max-width: 480px;
     animation: fadeInUp 1s ease-out 0.9s both;
@@ -831,7 +849,7 @@ section { padding: 5rem 0; position: relative; overflow: hidden; transition: bac
 .skill-info { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
 .skill-name { font-size: 0.9rem; font-weight: 500; color: var(--text-dark); }
 .skill-name i { margin-right: 0.5rem; font-size: 1.1rem; }
-.skill-percent { font-size: 0.85rem; font-weight: 600; color: var(--primary-color); }
+.skill-percent { font-size: 0.85rem; font-weight: 600; color: var(--primary-strong); }
 
 .skill-bar {
     height: 8px;
@@ -845,18 +863,26 @@ section { padding: 5rem 0; position: relative; overflow: hidden; transition: bac
     background: linear-gradient(90deg, var(--primary-color), var(--accent-color), var(--golden));
     background-size: 200% 100%;
     border-radius: 10px;
-    width: 0;
+    width: var(--progress);
     transition: width 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     animation: shimmer 2s infinite;
 }
 
+/* Map data-progress to fill width: no-JS fallback and the animation target */
+.skill-progress[data-progress="70"] { --progress: 70%; }
+.skill-progress[data-progress="75"] { --progress: 75%; }
+.skill-progress[data-progress="80"] { --progress: 80%; }
+.skill-progress[data-progress="85"] { --progress: 85%; }
+.skill-progress[data-progress="90"] { --progress: 90%; }
+.skill-progress[data-progress="95"] { --progress: 95%; }
 
 @keyframes shimmer {
     0% { background-position: 0% 50%; }
     100% { background-position: 200% 50%; }
 }
 
-.skill-progress.animate { width: var(--progress); }
+.js .skill-progress { width: 0; }
+.js .skill-progress.animate { width: var(--progress); }
 
 .certifications { background: linear-gradient(135deg, var(--warm-white) 0%, var(--secondary-color) 100%); }
 
@@ -913,11 +939,11 @@ section { padding: 5rem 0; position: relative; overflow: hidden; transition: bac
 
 .certification-tech span {
     background: linear-gradient(135deg, #eff6ff, #dbeafe);
-    color: var(--primary-color);
+    color: var(--primary-strong);
     padding: 0.25rem 0.75rem;
     border-radius: 15px;
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .certification-links { display: flex; gap: 1rem; }
@@ -926,9 +952,9 @@ section { padding: 5rem 0; position: relative; overflow: hidden; transition: bac
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--primary-color);
+    color: var(--primary-strong);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.3s ease;
 }
 
@@ -951,7 +977,7 @@ section { padding: 5rem 0; position: relative; overflow: hidden; transition: bac
 .category-icon { width: 50px; height: 50px; background: linear-gradient(135deg, var(--primary-color), var(--terracotta)); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
 .category-icon i { font-size: 1.4rem; color: white; }
 .learning-category h3 { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1.15rem; color: var(--text-dark); margin-bottom: 0.25rem; }
-.course-count { display: inline-block; font-size: 0.8rem; color: var(--primary-color); font-weight: 600; margin-bottom: 0.75rem; }
+.course-count { display: inline-block; font-size: 0.8rem; color: var(--primary-strong); font-weight: 600; margin-bottom: 0.75rem; }
 .learning-category p { color: var(--text-light); font-size: 0.9rem; line-height: 1.5; }
 
 [data-theme="dark"] .learning-journey { background: var(--bg-secondary); }
@@ -997,11 +1023,11 @@ section { padding: 5rem 0; position: relative; overflow: hidden; transition: bac
 }
 
 .experience-achievements strong { color: var(--text-dark); }
-.experience-achievements a { color: var(--primary-color); text-decoration: none; }
+.experience-achievements a { color: var(--primary-strong); text-decoration: underline; }
 .experience-achievements a:hover { text-decoration: underline; }
 
 .testimonials {
-    background: linear-gradient(135deg, var(--text-dark) 0%, #1a1210 100%);
+    background: linear-gradient(135deg, #2d1810 0%, #1a1210 100%);
     padding: 5rem 0;
     position: relative;
     overflow: hidden;
@@ -1016,7 +1042,7 @@ section { padding: 5rem 0; position: relative; overflow: hidden; transition: bac
     pointer-events: none;
 }
 
-.testimonials .section-title { color: var(--warm-white); }
+.testimonials .section-title { color: #fdf9f5; }
 .testimonials .section-title::after { background: linear-gradient(90deg, var(--golden), var(--accent-color)); }
 
 .testimonials-slider { position: relative; max-width: 800px; margin: 0 auto; min-height: 300px; }
@@ -1063,8 +1089,6 @@ section { padding: 5rem 0; position: relative; overflow: hidden; transition: bac
     margin-bottom: 2rem;
     font-weight: 500;
 }
-
-[data-theme="dark"] .testimonial-text { color: #1a1210; }
 
 .testimonial-author { display: flex; justify-content: center; align-items: center; gap: 1rem; }
 
@@ -1197,11 +1221,11 @@ section { padding: 5rem 0; position: relative; overflow: hidden; transition: bac
 
 .project-tech span {
     background: linear-gradient(135deg, #eff6ff, #dbeafe);
-    color: var(--primary-color);
+    color: var(--primary-strong);
     padding: 0.25rem 0.75rem;
     border-radius: 15px;
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.3s ease;
 }
 
@@ -1213,9 +1237,9 @@ section { padding: 5rem 0; position: relative; overflow: hidden; transition: bac
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--primary-color);
+    color: var(--primary-strong);
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.3s ease;
 }
 
@@ -1472,9 +1496,16 @@ section { padding: 5rem 0; position: relative; overflow: hidden; transition: bac
 .project-card,
 .certification-card,
 .skills-column {
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Hidden initial state only applies when JS is available to reveal it */
+.js .timeline-item,
+.js .project-card,
+.js .certification-card,
+.js .skills-column {
     opacity: 0;
     transform: translateY(40px);
-    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .timeline-item.animate,
@@ -1576,6 +1607,27 @@ img[loading="lazy"].loaded, img[loading="lazy"]:not([src=""]) { opacity: 1; }
     .projects-grid { grid-template-columns: 1fr; }
     .hero-buttons { width: 100%; padding: 0 1rem; align-items: stretch; }
     .btn { width: 100%; justify-content: center; padding: 0.85rem 1.25rem; font-size: 0.9rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+        scroll-behavior: auto !important;
+    }
+    html { scroll-behavior: auto; }
+    .morphing-blobs,
+    .particles-bg,
+    .floating-elements { display: none !important; }
+    /* Ensure scroll-revealed content is shown immediately without motion */
+    .js .timeline-item,
+    .js .project-card,
+    .js .certification-card,
+    .js .skills-column { opacity: 1 !important; transform: none !important; }
+    .js .skill-progress { width: var(--progress) !important; }
 }
 
 @media print {
