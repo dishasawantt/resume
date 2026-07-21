@@ -1,7 +1,10 @@
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 window.addEventListener('load', () => {
     const loader = document.getElementById('loader');
     if (loader) setTimeout(() => loader.classList.add('hidden'), 2000);
     updateActiveNavLink();
+    revealOnScroll();
 });
 
 const scrollProgress = document.getElementById('scroll-progress');
@@ -10,7 +13,7 @@ const updateScrollProgress = () => {
 };
 
 const canvas = document.getElementById('particles-canvas');
-if (canvas) {
+if (canvas && !reduceMotion) {
     const ctx = canvas.getContext('2d');
     let particles = [];
     let mouseParticle = { x: 0, y: 0 };
@@ -131,13 +134,8 @@ if (testimonialCards.length > 1) {
     if (ts) { ts.addEventListener('mouseenter', () => isPaused = true); ts.addEventListener('mouseleave', () => isPaused = false); }
 }
 
-const skillsSection = document.querySelector('.skills');
-if (skillsSection) {
-    const skillsObserver = new IntersectionObserver(entries => {
-        entries.forEach(entry => { if (entry.isIntersecting) { animateSkillBars(); skillsObserver.unobserve(entry.target); } });
-    }, { threshold: 0.3 });
-    skillsObserver.observe(skillsSection);
-}
+// Reveal-on-scroll (skills bars + card/section entrance) is handled by revealOnScroll() below,
+// which is resilient to fast scrolling and deep-links where an IntersectionObserver callback can be missed.
 
 const navToggle = document.getElementById('nav-toggle');
 const navMenu = document.getElementById('nav-menu');
@@ -234,6 +232,7 @@ window.addEventListener('scroll', () => {
     updateNavbarBackground();
     backToTop?.classList.toggle('visible', window.scrollY > 500);
     updateScrollProgress();
+    revealOnScroll();
 });
 
 const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
@@ -301,11 +300,19 @@ document.querySelectorAll('.contact-item a').forEach(link => {
     }
 });
 
-const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('animate'); });
-}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-document.querySelectorAll('.timeline-item, .project-card, .certification-card, .skills-column').forEach(el => observer.observe(el));
+// Resilient scroll reveal: adds `.animate` to anything at/above the viewport (handles fast scroll,
+// jump-to-anchor deep-links, and back-scrolling) and triggers the skill bars once the section is reached.
+const revealEls = document.querySelectorAll('.timeline-item, .project-card, .certification-card, .skills-column');
+let skillsAnimated = false;
+const revealOnScroll = () => {
+    const trigger = window.innerHeight - 40;
+    revealEls.forEach(el => { if (el.getBoundingClientRect().top < trigger) el.classList.add('animate'); });
+    if (!skillsAnimated) {
+        const s = document.querySelector('.skills');
+        if (s && s.getBoundingClientRect().top < trigger) { animateSkillBars(); skillsAnimated = true; }
+    }
+};
+revealOnScroll();
 
 document.querySelectorAll('img[loading="lazy"]').forEach(img => {
     if (img.complete) img.classList.add('loaded');
@@ -330,16 +337,18 @@ if (heroImageEl) {
     heroImageEl.addEventListener('mouseleave', () => { isHeroImageHovered = false; heroImageEl.style.transform = 'rotate(-5deg)'; });
 }
 
-window.addEventListener('mousemove', e => {
-    const x = e.clientX / window.innerWidth - 0.5;
-    const y = e.clientY / window.innerHeight - 0.5;
-    document.querySelectorAll('.blob').forEach((blob, i) => {
-        blob.style.transform = `translate(${x * (i + 1) * 20}px, ${y * (i + 1) * 20}px)`;
+if (!reduceMotion) {
+    window.addEventListener('mousemove', e => {
+        const x = e.clientX / window.innerWidth - 0.5;
+        const y = e.clientY / window.innerHeight - 0.5;
+        document.querySelectorAll('.blob').forEach((blob, i) => {
+            blob.style.transform = `translate(${x * (i + 1) * 20}px, ${y * (i + 1) * 20}px)`;
+        });
+        if (heroImageEl && window.scrollY < window.innerHeight && !isHeroImageHovered) {
+            heroImageEl.style.transform = `rotate(-5deg) translate(${x * 15}px, ${y * 15}px)`;
+        }
     });
-    if (heroImageEl && window.scrollY < window.innerHeight && !isHeroImageHovered) {
-        heroImageEl.style.transform = `rotate(-5deg) translate(${x * 15}px, ${y * 15}px)`;
-    }
-});
+}
 
 document.querySelectorAll('.btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
