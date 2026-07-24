@@ -1,206 +1,103 @@
-# Portfolio Website - Disha Sawant
+<div align="center">
 
-A modern, responsive portfolio website showcasing professional experience, education, skills, and projects. Built with vanilla HTML, CSS, and JavaScript for optimal performance. Hosted on GitHub Pages.
+# 🌐 Disha Sawant — Portfolio
 
-**Live Site:** https://dishasawantt.github.io/resume
+### A fast, responsive personal portfolio with a built-in AI chatbot and a full companion library of agentic-AI technical documentation. Static, dependency-free, and shipped on GitHub Pages.
 
-**AI Chatbot:** https://disha-chat.pages.dev ([source](https://github.com/dishasawantt/disha-chat))
+[![Live Site](https://img.shields.io/badge/Live_Site-dishasawantt.github.io%2Fresume-2563EB?style=for-the-badge&logo=googlechrome&logoColor=white)](https://dishasawantt.github.io/resume)
+[![AI Chatbot](https://img.shields.io/badge/AI_Chatbot-disha--chat-7C3AED?style=for-the-badge&logo=openai&logoColor=white)](https://disha-chat.pages.dev)
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](#)
+[![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](#)
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](#)
 
-## Features
+**[Highlights](#-highlights) · [Docs Library](#-agentic-ai-docs-library) · [Tech Stack](#-tech-stack) · [Run Locally](#-run-locally) · [Deploy](#-deploy)**
 
-- **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
-- **Modern UI/UX**: Clean, professional design with smooth animations
-- **Interactive Elements**: Hover effects, scroll animations, and dynamic content
-- **Contact Form**: Integrated mailto functionality for easy communication
-- **SEO Optimized**: Semantic HTML structure for better search engine visibility
-- **Fast Loading**: Optimized assets and minimal dependencies
-- **Accessibility**: Screen reader friendly and keyboard navigatable
+</div>
 
-## Sections
-
-1. **Hero Section**: Eye-catching introduction with call-to-action buttons
-2. **About**: Personal introduction and key achievements
-3. **Education**: Academic background and coursework
-4. **Skills**: Technical skills organized by category
-5. **Experience**: Professional work experience with detailed accomplishments
-6. **Projects**: Featured projects with live demos and technologies used
-7. **Contact**: Contact form and social media links
-
-## Technologies Used
-
-- HTML5
-- CSS3 (Grid, Flexbox, Animations)
-- Vanilla JavaScript
-- Font Awesome Icons
-- Google Fonts (Inter)
-
-## Quick Start
-
-1. **Download or Clone**: Get all the files in a folder
-2. **Open**: Simply open `index.html` in your web browser
-3. **Customize**: Edit the content to match your information
-
-## Free Deployment Options
-
-### 1. GitHub Pages (Recommended)
-
-1. Create a new repository on GitHub
-2. Upload all files to the repository
-3. Go to Settings → Pages
-4. Select "Deploy from a branch" → Main branch
-5. Your site will be live at `https://yourusername.github.io/repository-name`
-
-**Steps:**
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-git branch -M main
-git remote add origin https://github.com/yourusername/portfolio.git
-git push -u origin main
-```
-
-### 2. Netlify
-
-1. Visit [netlify.com](https://netlify.com)
-2. Sign up for free
-3. Drag and drop the folder to Netlify
-4. Your site will be live instantly with a custom URL
-5. Optional: Connect to GitHub for automatic deployments
-
-### 3. Vercel
-
-1. Visit [vercel.com](https://vercel.com)
-2. Sign up for free
-3. Import your GitHub repository or upload files
-4. Deploy with zero configuration
-5. Get automatic HTTPS and global CDN
-
-### 4. Surge.sh
-
-```bash
-npm install -g surge
-cd resume\ webiste
-surge
-```
-
-### 5. Firebase Hosting
-
-1. Install Firebase CLI: `npm install -g firebase-tools`
-2. Login: `firebase login`
-3. Initialize: `firebase init hosting`
-4. Deploy: `firebase deploy`
-
-## Customization Guide
-
-### Personal Information
-Edit the following in `index.html`:
-- Name and title in the hero section
-- Contact information
-- Social media links
-- Education details
-- Work experience
-- Projects information
-
-### Styling
-Modify `styles.css` to:
-- Change color scheme (look for CSS custom properties)
-- Adjust fonts and typography
-- Modify layout and spacing
-- Add or remove animations
-
-### Functionality
-Update `script.js` to:
-- Add new interactive features
-- Modify form handling
-- Customize animations
-- Add tracking or analytics
-
-## SEO Optimization
-
-The website includes:
-- Semantic HTML structure
-- Meta tags for social sharing
-- Structured data markup
-- Fast loading times
-- Mobile-first responsive design
-
-## Performance Features
-
-- **Optimized Images**: Uses CSS gradients and icon fonts
-- **Minimal Dependencies**: Only essential external resources
-- **Efficient CSS**: Uses modern layout techniques
-- **Progressive Enhancement**: Works even without JavaScript
-
-## Browser Support
-
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-- Mobile browsers
-
-## Local Development
-
-1. Open the project folder
-2. Start a local server (optional):
-   ```bash
-   # Using Python
-   python -m http.server 8000
-   
-   # Using Node.js
-   npx serve
-   
-   # Using PHP
-   php -S localhost:8000
-   ```
-3. Open `http://localhost:8000` in your browser
-
-## File Structure
-
-```
-resume webiste/
-├── index.html          # Main HTML file
-├── styles.css          # All styles and responsive design
-├── script.js           # Interactive functionality
-└── README.md           # This file
-```
-
-## Deployment Checklist
-
-Before deploying:
-- [ ] Update all personal information
-- [ ] Test all links and functionality
-- [ ] Verify responsive design on different devices
-- [ ] Check loading speed
-- [ ] Validate HTML and CSS
-- [ ] Test contact form functionality
-
-## Support
-
-For questions or issues:
-- Email: dishasawantt@gmail.com
-- LinkedIn: [disha-sawant-7877b21b6](https://linkedin.com/in/disha-sawant-7877b21b6/)
-
-## Documentation
-
-Technical docs for the AI chatbot and agentic AI architecture:
-
-| Document | Description |
-|---|---|
-| [agentic-ai-textbook.md](docs/agentic-ai-textbook.md) | Agentic AI concepts and chatbot design |
-| [agentic-ai-documentation.md](docs/agentic-ai-documentation.md) | Architecture and prompt engineering |
-| [agentic-ai-code-explained.md](docs/agentic-ai-code-explained.md) | Code walkthrough |
-| [chatbot-documentation.md](docs/chatbot-documentation.md) | Chatbot technical reference |
-| [knowledge-base.md](docs/knowledge-base.md) | AI knowledge base content |
-| [next-steps.md](docs/next-steps.md) | Deployment checklist |
-
-**AI Chatbot (separate repo):** https://github.com/dishasawantt/disha-chat · https://disha-chat.pages.dev
-
-## License
-
-This project is open source and available under the [MIT License](LICENSE).
+<p align="center">
+  <a href="https://dishasawantt.github.io/resume">
+    <img src=".github/assets/hero.png" alt="Disha Sawant portfolio — hero section with intro, quick actions, and profile photo" width="860">
+  </a>
+</p>
 
 ---
 
-Built with ❤️ by Disha Sawant
+## Overview
+
+This is my personal portfolio site — a hand-built, static single page that loads fast, works on any device, and needs no build step. Beyond the résumé itself, the repo doubles as a **knowledge base**: a `docs/` library that documents how my agentic-AI projects are designed and built, from architecture to annotated code.
+
+> **Visit:** [dishasawantt.github.io/resume](https://dishasawantt.github.io/resume) · **Chat with my AI avatar:** [disha-chat.pages.dev](https://disha-chat.pages.dev)
+
+## ✨ Highlights
+
+- ⚡ **Zero-dependency static site** — plain HTML, CSS, and JavaScript; no framework, no build.
+- 📱 **Fully responsive** across desktop, tablet, and mobile, with smooth scroll animations.
+- 🔍 **SEO-ready** — semantic markup, Open Graph tags, Twitter cards, and JSON-LD `Person` schema.
+- ♿ **Accessible** — screen-reader friendly and keyboard navigable.
+- 🤖 **Integrated AI chatbot** — links to [`disha-chat`](https://github.com/dishasawantt/disha-chat), an avatar that answers questions about my work.
+- 📚 **Companion docs** — an in-repo library explaining the agentic-AI projects in depth.
+
+## 📖 Sections
+
+**Hero · About · Education · Skills · Experience · Projects · Contact** — a complete single-page narrative with call-to-action buttons and a `mailto` contact form.
+
+## 📚 Agentic-AI Docs Library
+
+The [`docs/`](docs) folder is a mini-textbook on the AI systems behind the portfolio:
+
+| Document | What it covers |
+|---|---|
+| `agentic-ai-documentation.md` | High-level architecture of the agentic-AI stack |
+| `agentic-ai-code-explained.md` | Annotated code walkthroughs |
+| `agentic-ai-textbook.md` | Concept-first explainer of agentic patterns |
+| `chatbot-documentation.md` | How the portfolio chatbot is built |
+| `knowledge-base.md` | Project catalog and reference notes |
+| `next-steps.md` | Deployment status and roadmap |
+
+## 🧰 Tech Stack
+
+| Layer | Technologies |
+|---|---|
+| **Frontend** | HTML5, CSS3 (Grid, Flexbox, Animations), Vanilla JavaScript |
+| **UI** | Font Awesome, Google Fonts (Inter) |
+| **SEO** | Open Graph, Twitter Cards, JSON-LD |
+| **Hosting** | GitHub Pages |
+| **Companion app** | [disha-chat](https://github.com/dishasawantt/disha-chat) (Groq · Cloudflare Pages) |
+
+## 🚀 Run Locally
+
+No dependencies — open `index.html` directly, or serve it:
+
+```bash
+git clone https://github.com/dishasawantt/resume.git
+cd resume
+python -m http.server 8080
+```
+
+Open **http://localhost:8080**
+
+## 🌍 Deploy
+
+Hosted on **GitHub Pages**:
+
+1. Repo → **Settings** → **Pages**
+2. Source: **Deploy from a branch** → **main** / **/ (root)**
+3. Live at `https://dishasawantt.github.io/resume`
+
+## 🔗 Related
+
+- **AI Chatbot** → [disha-chat](https://github.com/dishasawantt/disha-chat) · [disha-chat.pages.dev](https://disha-chat.pages.dev)
+
+---
+
+<div align="center">
+
+### Disha Sawant
+**AI Application Engineer** · M.S. Computer Engineering @ SDSU
+
+[![Portfolio](https://img.shields.io/badge/Portfolio-2563EB?style=for-the-badge&logo=googlechrome&logoColor=white)](https://dishasawantt.github.io/resume)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/disha-sawant-7877b21b6)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/dishasawantt)
+[![Email](https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:dishasawantt@gmail.com)
+
+</div>
